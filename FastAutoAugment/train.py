@@ -99,6 +99,8 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
 
     # create a model & an optimizer
     model = get_model(C.get()['model'], num_class(C.get()['dataset']), data_parallel=(not horovod))
+    print(model)
+    return
 
     criterion = nn.CrossEntropyLoss()
     if C.get()['optimizer']['type'] == 'sgd':
