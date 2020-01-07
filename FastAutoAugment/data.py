@@ -4,6 +4,7 @@ import os
 import torch
 import torchvision
 from PIL import Image
+from keras.datasets import cifar100
 
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
 from torchvision.transforms import transforms
@@ -28,7 +29,7 @@ _IMAGENET_PCA = {
 _CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 
 
-def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, horovod=False, target_lb=-1):
+def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, horovod=False, target_lb=-1, permutated_vec=None):
     if 'cifar' in dataset or 'svhn' in dataset:
         transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
@@ -108,6 +109,11 @@ def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, horovod=F
     elif dataset == 'cifar100':
         total_trainset = torchvision.datasets.CIFAR100(root=dataroot, train=True, download=True, transform=transform_train)
         testset = torchvision.datasets.CIFAR100(root=dataroot, train=False, download=True, transform=transform_test)
+    elif dataset == 'permutated_cifar100':
+        def label_permutate(x):
+            return permutated_matrix[x]
+        total_trainset = torchvision.datasets.CIFAR100(root=dataroot, train=True, download=True, transform=transform_train, target_transform=label_permutate)
+        testset = torchvision.datasets.CIFAR100(root=dataroot, train=False, download=True, transform=transform_test, target_transform=label_permutate)
     elif dataset == 'svhn':
         trainset = torchvision.datasets.SVHN(root=dataroot, split='train', download=True, transform=transform_train)
         extraset = torchvision.datasets.SVHN(root=dataroot, split='extra', download=True, transform=transform_train)
