@@ -84,7 +84,7 @@ def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, write
     return metrics
 
 
-def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metric='last', save_path=None, only_eval=False, horovod=False, permutated_vec=None):
+def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metric='last', save_path=None, only_eval=False, horovod=False, permutated_vec=None, nb_labels=None):
     if horovod:
         import horovod.torch as hvd
         hvd.init()
@@ -98,7 +98,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
     trainsampler, trainloader, validloader, testloader_ = get_dataloaders(C.get()['dataset'], C.get()['batch'], dataroot, test_ratio, split_idx=cv_fold, horovod=horovod, permutated_vec=permutated_vec)
 
     # create a model & an optimizer
-    model = get_model(C.get()['model'], num_class(C.get()['dataset']), data_parallel=(not horovod))
+    model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels), data_parallel=(not horovod))
     # print(model)
     # return
 
@@ -266,10 +266,12 @@ if __name__ == '__main__':
     assert not (args.horovod and args.only_eval), 'can not use horovod when evaluation mode is enabled.'
     assert (args.only_eval and args.save) or not args.only_eval, 'checkpoint path not provided in evaluation mode.'
 
+    permutated_vec = None
+    nb_labels = None
     if args.nb_labels != -1:
-        permutated_vec = np.load('2_label_permutation_cifar100.npy')[int(args.classifier_id)]
-    else:
-        permutated_vec = None
+        nb_labels = args.nb_labels
+        permutated_vec = np.load(nb_labels+'_label_permutation_cifar100.npy')[int(args.classifier_id)]
+        
 
     if not args.only_eval:
         if args.save:
@@ -279,7 +281,7 @@ if __name__ == '__main__':
 
     import time
     t = time.time()
-    result = train_and_eval(args.tag, args.dataroot, test_ratio=args.cv_ratio, cv_fold=args.cv, save_path=args.save, only_eval=args.only_eval, horovod=args.horovod, metric='test', permutated_vec=permutated_vec)
+    result = train_and_eval(args.tag, args.dataroot, test_ratio=args.cv_ratio, cv_fold=args.cv, save_path=args.save, only_eval=args.only_eval, horovod=args.horovod, metric='test', permutated_vec=permutated_vec, nb_labels=nb_labels)
     elapsed = time.time() - t
 
     logger.info('done.')
