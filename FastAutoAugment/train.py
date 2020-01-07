@@ -167,7 +167,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                 weights['module.fc.weight'] = torch.rand_like(model.state_dict()['module.fc.weight'])
                 weights['module.fc.bias'] = torch.rand_like(model.state_dict()['module.fc.bias'])
                 model.load_state_dict(weights)
-            optimizer.load_state_dict(data['optimizer'])
+            # optimizer.load_state_dict(data['optimizer'])
             # if data['epoch'] < C.get()['epoch']:
             #     epoch_start = data['epoch']
             # else:
