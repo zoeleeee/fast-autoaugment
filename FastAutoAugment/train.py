@@ -157,15 +157,24 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
             key = 'model' if 'model' in data else 'state_dict'
             logger.info('checkpoint epoch@%d' % data['epoch'])
             if not isinstance(model, DataParallel):
-                model.load_state_dict({k.replace('module.', ''): v for k, v in data[key].items()})
+                # only for Pyramid cifar100
+                weights = {k.replace('module.', ''): v for k, v in data[key].items()}
+                weights['fc.weight'] = torch.rand_like(model.state_dict()['fc.weight'])
+                weights['fc.bias'] = torch.rand_like(model.state_dict()['fc.bias'])
+                model.load_state_dict(weights)
             else:
-                model.load_state_dict({k if 'module.' in k else 'module.'+k: v for k, v in data[key].items()})
+                weights = {k if 'module.' in k else 'module.'+k: v for k, v in data[key].items()}
+                weights['module.fc.weight'] = torch.rand_like(model.state_dict()['module.fc.weight'])
+                weights['module.fc.bias'] = torch.rand_like(model.state_dict()['module.fc.bias'])
+                model.load_state_dict(weights)
             optimizer.load_state_dict(data['optimizer'])
             if data['epoch'] < C.get()['epoch']:
                 epoch_start = data['epoch']
             else:
                 only_eval = True
         else:
+            print('stop and check the pth file')
+            return
             model.load_state_dict({k: v for k, v in data.items()})
         del data
     else:
@@ -224,16 +233,16 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                 # save checkpoint
                 if is_master and save_path:
                     logger.info('save model@%d to %s' % (epoch, save_path))
-                    torch.save({
-                        'epoch': epoch,
-                        'log': {
-                            'train': rs['train'].get_dict(),
-                            'valid': rs['valid'].get_dict(),
-                            'test': rs['test'].get_dict(),
-                        },
-                        'optimizer': optimizer.state_dict(),
-                        'model': model.state_dict()
-                    }, save_path)
+                    # torch.save({
+                    #     'epoch': epoch,
+                    #     'log': {
+                    #         'train': rs['train'].get_dict(),
+                    #         'valid': rs['valid'].get_dict(),
+                    #         'test': rs['test'].get_dict(),
+                    #     },
+                    #     'optimizer': optimizer.state_dict(),
+                    #     'model': model.state_dict()
+                    # }, save_path)
                     torch.save({
                         'epoch': epoch,
                         'log': {
