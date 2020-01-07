@@ -24,7 +24,7 @@ logger = get_logger('Fast AutoAugment')
 logger.setLevel(logging.INFO)
 
 
-def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, writer=None, verbose=1, scheduler=None):
+def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, writer=None, verbose=1, scheduler=None, nb_labels=1e6):
     tqdm_disable = bool(os.environ.get('TASK_NAME', ''))    # KakaoBrain Environment
     if verbose:
         loader = tqdm(loader, disable=tqdm_disable)
@@ -52,7 +52,7 @@ def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, write
                 nn.utils.clip_grad_norm_(model.parameters(), C.get()['optimizer'].get('clip', 5))
             optimizer.step()
 
-        top1, top5 = accuracy(preds, label, (1, 5))
+        top1, top5 = accuracy(preds, label, (1, min(5, nb_labels)))
         metrics.add_dict({
             'loss': loss.item() * len(data),
             'top1': top1.item() * len(data),
@@ -178,9 +178,9 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
         logger.info('evaluation only+')
         model.eval()
         rs = dict()
-        rs['train'] = run_epoch(model, trainloader, criterion, None, desc_default='train', epoch=0, writer=writers[0])
-        rs['valid'] = run_epoch(model, validloader, criterion, None, desc_default='valid', epoch=0, writer=writers[1])
-        rs['test'] = run_epoch(model, testloader_, criterion, None, desc_default='*test', epoch=0, writer=writers[2])
+        rs['train'] = run_epoch(model, trainloader, criterion, None, desc_default='train', epoch=0, writer=writers[0], nb_labels=nb_labels)
+        rs['valid'] = run_epoch(model, validloader, criterion, None, desc_default='valid', epoch=0, writer=writers[1], nb_labels=nb_labels)
+        rs['test'] = run_epoch(model, testloader_, criterion, None, desc_default='*test', epoch=0, writer=writers[2], nb_labels=nb_labels)
         for key, setname in itertools.product(['loss', 'top1', 'top5'], ['train', 'valid', 'test']):
             if setname not in rs:
                 continue
@@ -196,15 +196,15 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
 
         model.train()
         rs = dict()
-        rs['train'] = run_epoch(model, trainloader, criterion, optimizer, desc_default='train', epoch=epoch, writer=writers[0], verbose=is_master, scheduler=scheduler)
+        rs['train'] = run_epoch(model, trainloader, criterion, optimizer, desc_default='train', epoch=epoch, writer=writers[0], verbose=is_master, scheduler=scheduler, nb_labels=nb_labels)
         model.eval()
 
         if math.isnan(rs['train']['loss']):
             raise Exception('train loss is NaN.')
 
         if epoch % 5 == 0 or epoch == max_epoch:
-            rs['valid'] = run_epoch(model, validloader, criterion, None, desc_default='valid', epoch=epoch, writer=writers[1], verbose=is_master)
-            rs['test'] = run_epoch(model, testloader_, criterion, None, desc_default='*test', epoch=epoch, writer=writers[2], verbose=is_master)
+            rs['valid'] = run_epoch(model, validloader, criterion, None, desc_default='valid', epoch=epoch, writer=writers[1], verbose=is_master, nb_labels=nb_labels)
+            rs['test'] = run_epoch(model, testloader_, criterion, None, desc_default='*test', epoch=epoch, writer=writers[2], verbose=is_master, nb_labels=nb_labels)
 
             if metric == 'last' or rs[metric]['top1'] > best_top1:
                 if metric != 'last':
@@ -261,15 +261,15 @@ if __name__ == '__main__':
     parser.add_argument('--horovod', action='store_true')
     parser.add_argument('--only-eval', action='store_true')
     parser.add_argument('--classifier-id', type=int, default=0)
-    parser.add_argument('--nb-labels', type=int, default=-1)
+    parser.add_argument('--nb-labels', type=int, default=1e6)
     args = parser.parse_args()
 
     assert not (args.horovod and args.only_eval), 'can not use horovod when evaluation mode is enabled.'
     assert (args.only_eval and args.save) or not args.only_eval, 'checkpoint path not provided in evaluation mode.'
 
     permutated_vec = None
-    nb_labels = None
-    if args.nb_labels != -1:
+    nb_labels = 1e6
+    if args.nb_labels != 1e6:
         nb_labels = args.nb_labels
         permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(args.classifier_id)]
         
