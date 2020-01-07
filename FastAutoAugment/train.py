@@ -271,6 +271,7 @@ if __name__ == '__main__':
     parser.add_argument('--only-eval', action='store_true')
     parser.add_argument('--classifier-id', type=int, default=0)
     parser.add_argument('--nb-labels', type=int, default=1e6)
+    parser.add_argument('--lr', type=float, default=0.5)
     args = parser.parse_args()
 
     assert not (args.horovod and args.only_eval), 'can not use horovod when evaluation mode is enabled.'
