@@ -1,2 +1,2 @@
 export PYTHONPATH=$PYTHONPATH:$PWD
-CUDA_VISIBLE_DEVICES=1 python FastAutoAugment/train.py -c confs/pyramid272_cifar100_2.yaml --aug fa_reduced_cifar10 --dataset permutated_cifar100 --save permutated_cifar100_2.pth --nb-labels 2 --classifier-id 0  --dataroot /home/zhuzby/data
+CUDA_VISIBLE_DEVICES=1,2 python FastAutoAugment/train.py -c confs/pyramid272_cifar100_2.yaml --aug fa_reduced_cifar10 --dataset permutated_cifar100 --save permutated_cifar100_2.pth --nb-labels 2 --classifier-id 0  --dataroot /home/zhuzby/data
