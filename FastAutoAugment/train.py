@@ -18,6 +18,7 @@ from FastAutoAugment.lr_scheduler import adjust_learning_rate_resnet
 from FastAutoAugment.metrics import accuracy, Accumulator
 from FastAutoAugment.networks import get_model, num_class
 from warmup_scheduler import GradualWarmupScheduler
+import numpy as np
 
 logger = get_logger('Fast AutoAugment')
 logger.setLevel(logging.INFO)
@@ -270,7 +271,7 @@ if __name__ == '__main__':
     nb_labels = None
     if args.nb_labels != -1:
         nb_labels = args.nb_labels
-        permutated_vec = np.load(nb_labels+'_label_permutation_cifar100.npy')[int(args.classifier_id)]
+        permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(args.classifier_id)]
         
 
     if not args.only_eval:
