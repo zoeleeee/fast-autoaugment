@@ -111,7 +111,7 @@ def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, horovod=F
         testset = torchvision.datasets.CIFAR100(root=dataroot, train=False, download=True, transform=transform_test)
     elif dataset == 'permutated_cifar100':
         def label_permutate(x):
-            return permutated_matrix[x]
+            return permutated_vec[x]
         total_trainset = torchvision.datasets.CIFAR100(root=dataroot, train=True, download=True, transform=transform_train, target_transform=label_permutate)
         testset = torchvision.datasets.CIFAR100(root=dataroot, train=False, download=True, transform=transform_test, target_transform=label_permutate)
     elif dataset == 'svhn':
