@@ -292,7 +292,7 @@ if __name__ == '__main__':
 
     import time
     t = time.time()
-    result = train_and_eval(args.tag, args.dataroot, test_ratio=args.cv_ratio, cv_fold=args.cv, save_path=args.save, only_eval=args.only_eval, horovod=args.horovod, metric='test', permutated_vec=permutated_vec, nb_labels=nb_labels, classifier_id=classifier_id)
+    result = train_and_eval(args.tag, args.dataroot, test_ratio=args.cv_ratio, cv_fold=args.cv, save_path=args.save, only_eval=args.only_eval, horovod=args.horovod, metric='test', permutated_vec=permutated_vec, nb_labels=nb_labels, classifier_id=args.classifier_id)
     elapsed = time.time() - t
 
     logger.info('done.')
