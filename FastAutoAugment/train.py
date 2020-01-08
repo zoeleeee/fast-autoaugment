@@ -85,7 +85,7 @@ def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, write
     return metrics
 
 
-def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metric='last', save_path=None, only_eval=False, horovod=False, permutated_vec=None, nb_labels=None):
+def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metric='last', save_path=None, only_eval=False, horovod=False, permutated_vec=None, nb_labels=None, classifier_id=None):
     if horovod:
         import horovod.torch as hvd
         hvd.init()
@@ -231,8 +231,8 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                 )
 
                 # save checkpoint
-                if is_master and save_path:
-                    logger.info('save model@%d to %s' % (epoch, save_path))
+                # if is_master and save_path:
+                #     logger.info('save model@%d to %s' % (epoch, save_path))
                     # torch.save({
                     #     'epoch': epoch,
                     #     'log': {
@@ -243,16 +243,16 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                     #     'optimizer': optimizer.state_dict(),
                     #     'model': model.state_dict()
                     # }, save_path)
-                    torch.save({
-                        'epoch': epoch,
-                        'log': {
-                            'train': rs['train'].get_dict(),
-                            'valid': rs['valid'].get_dict(),
-                            'test': rs['test'].get_dict(),
-                        },
-                        'optimizer': optimizer.state_dict(),
-                        'model': model.state_dict()
-                    }, save_path.replace('.pth', '_e%d_top1_%.3f_%.3f' % (epoch, rs['train']['top1'], rs['test']['top1']) + '.pth'))
+    torch.save({
+        'epoch': epoch,
+        'log': {
+            'train': rs['train'].get_dict(),
+            'valid': rs['valid'].get_dict(),
+            'test': rs['test'].get_dict(),
+        },
+        'optimizer': optimizer.state_dict(),
+        'model': model.state_dict()
+    }, save_path.replace('.pth', '{}_e%d_top1_%.3f_%.3f.pth'.format(classifier_id, epoch, rs['train']['top1'], rs['test']['top1'])))
 
     del model
 
@@ -292,7 +292,7 @@ if __name__ == '__main__':
 
     import time
     t = time.time()
-    result = train_and_eval(args.tag, args.dataroot, test_ratio=args.cv_ratio, cv_fold=args.cv, save_path=args.save, only_eval=args.only_eval, horovod=args.horovod, metric='test', permutated_vec=permutated_vec, nb_labels=nb_labels)
+    result = train_and_eval(args.tag, args.dataroot, test_ratio=args.cv_ratio, cv_fold=args.cv, save_path=args.save, only_eval=args.only_eval, horovod=args.horovod, metric='test', permutated_vec=permutated_vec, nb_labels=nb_labels, classifier_id=classifier_id)
     elapsed = time.time() - t
 
     logger.info('done.')

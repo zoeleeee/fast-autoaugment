@@ -7,7 +7,7 @@ dataset: permutated_cifar100
 aug: fa_reduced_cifar10
 cutout: 16
 batch: 64
-epoch: 20
+epoch: 100
 lr: 0.05
 lr_schedule:
   type: 'cosine'
