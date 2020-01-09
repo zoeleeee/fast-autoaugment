@@ -2,6 +2,7 @@ import foolbox
 import numpy as np 
 import torch
 from FastAutoAugment.networks import get_model, num_class
+from FastAutoAugment.data import get_dataloaders
 from theconf import Config as C, ConfigArgumentParser
 import sys
 import os
@@ -23,19 +24,22 @@ if __name__ == '__main__':
 	model = target_model(sys.argv[-2])
 	preprocessing = dict(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010], axis=-3)
 	fmodel = foolbox.models.PyTorchModel(model, bounds=(0, 1), num_classes=100, preprocessing=preprocessing)
-	images, labels = foolbox.utils.samples(dataset='cifar100', batchsize=64, data_format='channels_first', bounds=(0, 1))
-	print('normal:', np.mean(fmodel.forward(images).argmax(axis=-1) == labels))
 
-
-	attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
-	adversarials = attack(images, labels, unpack=False)
-	adv_imgs = [a.perturbed for a in adversarials]
+	normal_correct = 0
+	adv_correct = 0
+	adv_imgs = []
+	_, _, _, loader = get_dataloaders(C.get()['dataset'], C.get()['batch'], dataroot, test_ratio, split_idx=cv_fold, horovod=horovod, permutated_vec=permutated_vec)
+	for images, label in loader:
+		# images, labels = foolbox.utils.samples(dataset='cifar100', batchsize=64, data_format='channels_first', bounds=(0, 1))
+		normal_correct += np.sum(fmodel.forward(images).argmax(axis=-1) == labels)
+		attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
+		adversarials = attack(images, labels, unpack=False)
+		adv_imgs += [a.perturbed for a in adversarials]
+		adversarial_classes = np.asarray([a.adversarial_class for a in adversarials])
+		adv_correct += np.mean(adversarial_classes == labels)  # will always be 0.0
+	print('normal acc:', normal_correct / len(dataloader.dataset))
+	print('adversarial acc:', adv_correct / len(dataloader.dataset))
 	np.save('cifar100_advs.npy', adv_imgs)
-
-	adversarial_classes = np.asarray([a.adversarial_class for a in adversarials])
-	print('c&w:', np.mean(adversarial_classes == labels))  # will always be 0.0
-	print(labels)
-	print(adversarial_classes)
 
 	# The `Adversarial` objects also provide a `distance` attribute. Note that the distances
 	# can be 0 (misclassified without perturbation) and inf (attack failed).
