@@ -38,7 +38,7 @@ if __name__ == '__main__':
 	model_dir = 'models'
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
-	for i in len(files):
+	for i in np.arange(len(files)):
 		labels = label_permutation(np.load('cifar100_labels.npy'), sys.argv[-1], i)
 		dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 		dataloader = data.Dataloader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
