@@ -52,7 +52,7 @@ def get_model(conf, num_class=10, data_parallel=True):
     return model
 
 
-def num_class(dataset, nb_labels=None):
+def num_class(dataset, nb_labels=100):
     return {
         'cifar10': 10,
         'reduced_cifar10': 10,

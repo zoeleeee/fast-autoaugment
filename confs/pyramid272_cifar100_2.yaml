@@ -3,7 +3,7 @@ model:
   depth: 272
   alpha: 200
   bottleneck: True
-dataset: permutated_cifar100
+dataset: cifar100
 aug: fa_reduced_cifar10
 cutout: 16
 batch: 64
