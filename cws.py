@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
 	attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
 	adversarials = attack(images, labels, unpack=False)
-	adv_imgs = adversarials.perturbed
+	adv_imgs = [a.perturbed for a in adversarials]
 	np.save('cifar100_advs.npy', adv_imgs)
 
 	adversarial_classes = np.asarray([a.adversarial_class for a in adversarials])
