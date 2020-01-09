@@ -37,7 +37,7 @@ if __name__ == '__main__':
 	_ = C(sys.argv[-1])
 	model = target_model(sys.argv[-2])
 	preprocessing = dict(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010], axis=-3)
-	fmodel = foolbox.models.PyTorchModel(model, bounds=(0, 1), num_classes=100)#, preprocessing=preprocessing)
+	fmodel = foolbox.models.PyTorchModel(model, num_classes=100)#, preprocessing=preprocessing)
 
 	normal_correct = 0
 	adv_correct = 0

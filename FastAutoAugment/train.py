@@ -36,7 +36,7 @@ def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, write
     steps = 0
     for data, label in loader:
         steps += 1
-        print(torch.max(data).item(), torch.min(data).item())
+        # print(torch.max(data).item(), torch.min(data).item())
         data, label = data.cuda(), label.cuda()
 
         if optimizer:
