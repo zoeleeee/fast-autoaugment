@@ -45,6 +45,7 @@ if __name__ == '__main__':
 	labels = []
 	loader = get_data()
 	for images, label in loader:
+		images, label = images.numpy(), label.numpy()
 		# images, labels = foolbox.utils.samples(dataset='cifar100', batchsize=64, data_format='channels_first', bounds=(0, 1))
 		normal_correct += np.sum(fmodel.forward(images).argmax(axis=-1) == label)
 		attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
