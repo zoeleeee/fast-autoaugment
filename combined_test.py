@@ -39,10 +39,11 @@ if __name__ == '__main__':
 	valids = np.ones(len(dataset))
 	model_dir = 'cifar100_2_models'
 	files = os.listdir(model_dir)
-	for file in files:
+	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
+	for i in len(files):
 		preds = []
 		valid = []
-		path = os.path.join(model_dir, file)
+		path = entries[i]
 		model = target_model(path)
 		for images, label in loader:
 			outputs = model(images)
