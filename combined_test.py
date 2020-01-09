@@ -19,7 +19,6 @@ def label_permutation(labels, nb_labels, classifier_id):
     return labels
 
 def target_model(save_path):
-	_ = C('confs/pyramid272_cifar100_2_tl.yaml')
 	model = get_model(C.get()['model'], num_class(C.get()['dataset'], 2))
 	if save_path and os.path.exists(save_path):
 		data = torch.load(save_path)
@@ -31,7 +30,8 @@ def target_model(save_path):
 		del data
 	return model
 
-if __name__ == '__main__':	
+if __name__ == '__main__':
+	_ = C('confs/pyramid272_cifar100_2_tl.yaml')
 	imgs = np.load('cifar100_advs.npy')
 
 	res = []
@@ -62,6 +62,9 @@ if __name__ == '__main__':
 				valid = np.hstack((valid, (_predicted==_label)))
 		valids = [valids[i] and valid[i] for i in range(len(valids))]
 		res.append(preds)
+		del loader
+		del dataset
+		del labels
 	
 	np.save('res.npy', res)
 	np.save('valid.npy', valids)
