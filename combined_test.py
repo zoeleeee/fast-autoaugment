@@ -34,7 +34,7 @@ if __name__ == '__main__':
 	imgs = np.load('cifar100_advs.npy')
 
 	res = []
-	valids = np.ones(len(imgs.shape[0]))
+	valids = np.ones(imgs.shape[0])
 	model_dir = 'models'
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
