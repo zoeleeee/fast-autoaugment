@@ -47,16 +47,19 @@ if __name__ == '__main__':
 		valid = []
 		path = entries[i]
 		model = target_model(path)
+		model.eval()
 		for images, label in loader:
 			outputs = model(images)
 			_, predicted = torch.max(outputs, 1)
 
+			_predicted = predicted.to('cpu').numpy()
+			_label = label.to('cpu').numpy()
 			if preds == []:
-				preds = predicted.data
-				valid = (predicted.data == label.data)
+				preds = _predicted
+				valid = (_predicted == _label)
 			else:
-				preds = np.hstack((preds, predicted.data))
-				valid = np.hstack((valid, (predicted==label).data))
+				preds = np.hstack((preds, _predicted))
+				valid = np.hstack((valid, (_predicted==_label)))
 		valids = [valids[i] and valid[i] for i in range(len(valids))]
 		res.append(preds)
 	
