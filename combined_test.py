@@ -19,7 +19,7 @@ def label_permutation(labels, nb_labels, classifier_id):
     return labels
 
 def target_model(save_path):
-	_ = C('pyramid272_cifar100_2_tl.yaml')
+	_ = C('confs/pyramid272_cifar100_2_tl.yaml')
 	model = get_model(C.get()['model'], num_class(C.get()['dataset']))
 	if save_path and os.path.exists(save_path):
 		data = torch.load(save_path)
