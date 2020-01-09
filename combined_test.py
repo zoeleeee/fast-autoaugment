@@ -20,7 +20,7 @@ def label_permutation(labels, nb_labels, classifier_id):
 
 def target_model(save_path):
 	_ = C('confs/pyramid272_cifar100_2_tl.yaml')
-	model = get_model(C.get()['model'], num_class(C.get()['dataset']))
+	model = get_model(C.get()['model'], num_class(C.get()['dataset'], 2))
 	if save_path and os.path.exists(save_path):
 		data = torch.load(save_path)
 		if 'model' in data or 'state_dict' in data:
