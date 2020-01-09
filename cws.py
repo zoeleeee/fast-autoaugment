@@ -28,18 +28,21 @@ if __name__ == '__main__':
 	normal_correct = 0
 	adv_correct = 0
 	adv_imgs = []
+	labels = []
 	_, _, _, loader = get_dataloaders(C.get()['dataset'], C.get()['batch'], dataroot, test_ratio, split_idx=cv_fold, horovod=horovod, permutated_vec=permutated_vec)
 	for images, label in loader:
 		# images, labels = foolbox.utils.samples(dataset='cifar100', batchsize=64, data_format='channels_first', bounds=(0, 1))
-		normal_correct += np.sum(fmodel.forward(images).argmax(axis=-1) == labels)
+		normal_correct += np.sum(fmodel.forward(images).argmax(axis=-1) == label)
 		attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
 		adversarials = attack(images, labels, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
 		adversarial_classes = np.asarray([a.adversarial_class for a in adversarials])
-		adv_correct += np.mean(adversarial_classes == labels)  # will always be 0.0
+		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
+		labels += label
 	print('normal acc:', normal_correct / len(dataloader.dataset))
 	print('adversarial acc:', adv_correct / len(dataloader.dataset))
 	np.save('cifar100_advs.npy', adv_imgs)
+	np.save('cifar100_labels.npy', labels)
 
 	# The `Adversarial` objects also provide a `distance` attribute. Note that the distances
 	# can be 0 (misclassified without perturbation) and inf (attack failed).
