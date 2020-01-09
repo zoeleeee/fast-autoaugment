@@ -41,7 +41,7 @@ if __name__ == '__main__':
 	for i in np.arange(len(files)):
 		labels = label_permutation(np.load('cifar100_labels.npy'), sys.argv[-1], i)
 		dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-		dataloader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+		loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 		preds = []
 		valid = []
 		path = entries[i]
@@ -71,5 +71,5 @@ if __name__ == '__main__':
 	print('acc:', np.mean(valids))
 	print('wrong valid:', wr/len(valids))
 
-	print('normal acc:', normal_correct / len(dataloader.dataset))
-	print('adversarial acc:', adv_correct / len(dataloader.dataset)) 
+	print('normal acc:', normal_correct / imgs.shape[0])
+	print('adversarial acc:', adv_correct / imgs.shape[0])
