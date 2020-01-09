@@ -52,11 +52,11 @@ if __name__ == '__main__':
 			_, predicted = torch.max(outputs, 1)
 
 			if preds == []:
-				preds = predicted
-				valid = (predicted == label)
+				preds = predicted.data
+				valid = (predicted.data == label.data)
 			else:
-				preds = np.hstack((preds, predicted))
-				valid = np.hstack((valid, predicted==label))
+				preds = np.hstack((preds, predicted.data))
+				valid = np.hstack((valid, (predicted==label).data))
 		valids = [valids[i] and valid[i] for i in range(len(valids))]
 		res.append(preds)
 	
