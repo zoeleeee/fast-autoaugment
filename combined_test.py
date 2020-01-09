@@ -11,8 +11,8 @@ from torch.utils import data
 import copy
 from FastAutoAugment.metrics import accuracy
 
-def label_permutation(labels, nb_labels):
-    permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(args.classifier_id)]
+def label_permutation(labels, nb_labels, classifier_id):
+    permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(classifier_id)]
     tmp = copy.deepcopy(labels)
     for i in range(np.max(labels)+1):
     	labels[tmp==i] = permutated_vec[i]
@@ -32,9 +32,6 @@ def target_model(save_path):
 
 if __name__ == '__main__':	
 	imgs = np.load('cifar100_advs.npy')
-	labels = label_permutation(np.load('cifar100_labels.npy'), sys.argv[-1])
-	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-	dataloader = data.Dataloader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 
 	res = []
 	valids = np.ones(len(dataset))
@@ -42,6 +39,9 @@ if __name__ == '__main__':
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
 	for i in len(files):
+		labels = label_permutation(np.load('cifar100_labels.npy'), sys.argv[-1], i)
+		dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
+		dataloader = data.Dataloader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 		preds = []
 		valid = []
 		path = entries[i]
