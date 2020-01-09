@@ -1,11 +1,25 @@
 import foolbox
 import numpy as np 
 import torch
+from torchvision.transforms import transforms
 from FastAutoAugment.networks import get_model, num_class
-from FastAutoAugment.data import get_dataloaders
 from theconf import Config as C, ConfigArgumentParser
+import torchvision
 import sys
 import os
+
+def get_data(path = '/home/zhuzby/data'):
+	_CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
+	transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(_CIFAR_MEAN, _CIFAR_STD),
+        ])
+	testset = torchvision.datasets.CIFAR100(root=path, train=False, download=True, transform=transform_test)
+	testloader = torch.utils.data.DataLoader(
+        testset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True,
+        drop_last=False
+    )
+    return testloader
 
 def target_model(save_path):
 	model = get_model(C.get()['model'], num_class(C.get()['dataset']))
@@ -29,7 +43,7 @@ if __name__ == '__main__':
 	adv_correct = 0
 	adv_imgs = []
 	labels = []
-	_, _, _, loader = get_dataloaders(C.get()['dataset'], C.get()['batch'], dataroot, test_ratio, split_idx=cv_fold, horovod=horovod, permutated_vec=permutated_vec)
+	loader = get_data()
 	for images, label in loader:
 		# images, labels = foolbox.utils.samples(dataset='cifar100', batchsize=64, data_format='channels_first', bounds=(0, 1))
 		normal_correct += np.sum(fmodel.forward(images).argmax(axis=-1) == label)
