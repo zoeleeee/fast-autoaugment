@@ -1,3 +1,4 @@
+# python combined_test.py nb_labels
 from __future__ import division
 import numpy as np 
 import torch
@@ -31,13 +32,13 @@ def target_model(save_path):
 
 if __name__ == '__main__':	
 	imgs = np.load('cifar100_advs.npy')
-	labels = permutate_vec(np.load('cifar100_labels.npy'), sys.argv[-1])
+	labels = label_permutation(np.load('cifar100_labels.npy'), sys.argv[-1])
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 	dataloader = data.Dataloader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 
 	res = []
 	valids = np.ones(len(dataset))
-	model_dir = 'cifar100_2_models'
+	model_dir = 'models'
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
 	for i in len(files):
@@ -58,10 +59,14 @@ if __name__ == '__main__':
 		valids = [valids[i] and valid[i] for i in range(len(valids))]
 		res.append(preds)
 	
+	np.save('res.npy', res)
+	np.save('valid.npy', valids)
+
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(sys.argv[-1]))[:len(files)].T
+	res = np.array(res).T
 	wr = []
 	for i in np.arange(len(valids))[valids==0]:
-		if (True if res.T[i] == permuted_label else False for permuted_label in permutated_labels):
+		if (True if res[i] == permuted_label else False for permuted_label in permutated_labels):
 			wr.append(i)
 	print('acc:', np.mean(valids))
 	print('wrong valid:', wr/len(valids))
