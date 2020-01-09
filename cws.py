@@ -8,18 +8,18 @@ import torchvision
 import sys
 import os
 
-def get_data(path = '/home/zhuzby/data'):
+def get_data(path = '/home/b90/data'):
 	_CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 	transform_test = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(_CIFAR_MEAN, _CIFAR_STD),
-        ])
+			transforms.ToTensor(),
+			transforms.Normalize(_CIFAR_MEAN, _CIFAR_STD),
+		])
 	testset = torchvision.datasets.CIFAR100(root=path, train=False, download=True, transform=transform_test)
 	testloader = torch.utils.data.DataLoader(
-        testset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True,
-        drop_last=False
-    )
-    return testloader
+		testset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True,
+		drop_last=False
+	)
+	return testloader
 
 def target_model(save_path):
 	model = get_model(C.get()['model'], num_class(C.get()['dataset']))
