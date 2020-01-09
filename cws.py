@@ -60,10 +60,12 @@ if __name__ == '__main__':
 		else:
 			labels = np.hstack((labels,label))
 		# labels += label
-	print('normal acc:', normal_correct / len(dataloader.dataset))
-	print('adversarial acc:', adv_correct / len(dataloader.dataset))
 	np.save('cifar100_advs.npy', adv_imgs)
 	np.save('cifar100_labels.npy', labels)
+	print(np.max(adv_imgs), np.min(adv_imgs))
+	print('normal acc:', normal_correct / len(loader.dataset))
+	print('adversarial acc:', adv_correct / len(loader.dataset))
+	
 
 	# The `Adversarial` objects also provide a `distance` attribute. Note that the distances
 	# can be 0 (misclassified without perturbation) and inf (attack failed).

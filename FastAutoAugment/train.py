@@ -9,6 +9,8 @@ import torch
 from torch import nn, optim
 from torch.nn.parallel.data_parallel import DataParallel
 
+import torchvision
+
 from tqdm import tqdm
 from theconf import Config as C, ConfigArgumentParser
 
@@ -23,6 +25,12 @@ import numpy as np
 logger = get_logger('Fast AutoAugment')
 logger.setLevel(logging.INFO)
 
+# use to reverse transform to recover image
+# invTrans = torchvision.transforms.Compose([ torchvision.transforms.Normalize(mean = [ 0., 0., 0. ],
+#                                                      std = [ 1/0.2023, 1/0.1994, 1/0.2010 ]),
+#                                 torchvision.transforms.Normalize(mean = [ -0.4914, -0.4822, -0.4465],
+#                                                      std = [ 1., 1., 1. ]),
+#                                ])
 
 def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, writer=None, verbose=1, scheduler=None, nb_labels=1e6):
     tqdm_disable = bool(os.environ.get('TASK_NAME', ''))    # KakaoBrain Environment
@@ -98,7 +106,13 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
 
     max_epoch = C.get()['epoch']
     trainsampler, trainloader, validloader, testloader_ = get_dataloaders(C.get()['dataset'], C.get()['batch'], dataroot, test_ratio, split_idx=cv_fold, horovod=horovod, permutated_vec=permutated_vec)
-
+    
+    # trying how to recover original image
+    # for images, labels in testloader_:
+    #     img = invTrans(images[0])
+    #     torchvision.utils.save_image(img, 'img.png')
+    #     # print(torch.max(images).item(), torch.min(images).item())
+    #     return
     # create a model & an optimizer
     model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels), data_parallel=(not horovod))
     # print(model)
