@@ -12,10 +12,7 @@ def target_model(save_path):
 		data = torch.load(save_path)
 		if 'model' in data or 'state_dict' in data:
 			key = 'model' if 'model' in data else 'state_dict'
-			if not isinstance(model, DataParallel):
-				model.load_state_dict({k.replace('module.', ''): v for k, v in data[key].items()})
-			else:
-				model.load_state_dict({k if 'module.' in k else 'module.'+k: v for k, v in data[key].items()})
+			model.load_state_dict({k if 'module.' in k else 'module.'+k: v for k, v in data[key].items()})
 		else:
 			model.load_state_dict({k: v for k, v in data.items()})
 		del data
