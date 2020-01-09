@@ -12,7 +12,7 @@ def get_data(path = '/home/zhuzby/data'):
 	_CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 	transform_test = transforms.Compose([
 			transforms.ToTensor(),
-	# 		transforms.Normalize(_CIFAR_MEAN, _CIFAR_STD),
+			transforms.Normalize(_CIFAR_MEAN, _CIFAR_STD),
 		])
 	testset = torchvision.datasets.CIFAR100(root=path, train=False, download=True)
 	testloader = torch.utils.data.DataLoader(
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 	_ = C(sys.argv[-1])
 	model = target_model(sys.argv[-2])
 	preprocessing = dict(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010], axis=-3)
-	fmodel = foolbox.models.PyTorchModel(model, bounds=(0, 1), num_classes=100, preprocessing=preprocessing)
+	fmodel = foolbox.models.PyTorchModel(model, bounds=(0, 1), num_classes=100)#, preprocessing=preprocessing)
 
 	normal_correct = 0
 	adv_correct = 0
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 	loader = get_data()
 	for images, label in loader:
 		# images, labels = foolbox.utils.samples(dataset='cifar100', batchsize=64, data_format='channels_first', bounds=(0, 1))
-		normal_correct += np.sum(fmodel.forward(images.numpy()).argmax(axis=-1) == label)
+		normal_correct += np.sum(fmodel.forward(images).argmax(axis=-1) == label)
 		attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
 		adversarials = attack(images, labels, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
