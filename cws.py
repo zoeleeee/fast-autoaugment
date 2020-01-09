@@ -8,7 +8,7 @@ import torchvision
 import sys
 import os
 
-def get_data(path = '/home/b90/data'):
+def get_data(path = '/home/zhuzby/data'):
 	_CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 	transform_test = transforms.Compose([
 			transforms.ToTensor(),
