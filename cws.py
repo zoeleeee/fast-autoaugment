@@ -46,6 +46,7 @@ if __name__ == '__main__':
 	loader = get_data()
 	for images, label in loader:
 		images, label = images.numpy(), label.numpy()
+		print(label.shape)
 		print(np.max(images), np.min(images))
 		# images, labels = foolbox.utils.samples(dataset='cifar100', batchsize=64, data_format='channels_first', bounds=(0, 1))
 		normal_correct += np.sum(fmodel.forward(images).argmax(axis=-1) == label)
@@ -54,7 +55,11 @@ if __name__ == '__main__':
 		adv_imgs += [a.perturbed for a in adversarials]
 		adversarial_classes = np.asarray([a.adversarial_class for a in adversarials])
 		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
-		labels += label
+		if labels == []:
+			labels = label
+		else:
+			labels = np.hstack((labels,label))
+		# labels += label
 	print('normal acc:', normal_correct / len(dataloader.dataset))
 	print('adversarial acc:', adv_correct / len(dataloader.dataset))
 	np.save('cifar100_advs.npy', adv_imgs)
