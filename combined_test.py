@@ -41,7 +41,7 @@ if __name__ == '__main__':
 	for i in np.arange(len(files)):
 		labels = label_permutation(np.load('cifar100_labels.npy'), sys.argv[-1], i)
 		dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-		dataloader = data.Dataloader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+		dataloader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 		preds = []
 		valid = []
 		path = entries[i]
