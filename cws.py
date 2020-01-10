@@ -36,6 +36,7 @@ def target_model(save_path):
 if __name__ == '__main__':
 	_ = C(sys.argv[-1])
 	model = target_model(sys.argv[-2])
+	model.eval()
 	preprocessing = dict(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010], axis=-3)
 	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100)#, preprocessing=preprocessing)
 
