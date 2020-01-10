@@ -56,28 +56,26 @@ if __name__ == '__main__':
 		_predicted = fmodel.forward(images).argmax(axis=-1)
 		print(np.sum(_predicted == predicted.cpu().numpy()))
 		normal_correct += np.sum(predicted.cpu().numpy() == label)
-		# attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
-		# adversarials = attack(images, label, unpack=False)
-	# 	# adv_imgs += [a for a in adversarials]
-	# 	# adversarial_classes = fmodel.forward(adversarials).argmax(axis=-1)
-		# adv_imgs += [a.perturbed for a in adversarials]
-		# adversarial_classes = [a.adversarial_class for a in adversarials]
-		# adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
-	# 	if labels == []:
-	# 		labels = label
-	# 	else:
-	# 		labels = np.hstack((labels,label))
-	# 	# labels += label
-	# np.save('cifar100_advs.npy', adv_imgs)
-	# np.save('cifar100_labels.npy', labels)
-	# print(np.max(adv_imgs), np.min(adv_imgs))
+		attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
+		adversarials = attack(images, label, unpack=False)
+		adv_imgs += [a.perturbed for a in adversarials]
+		adversarial_classes = [a.adversarial_class for a in adversarials]
+		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
+		if labels == []:
+			labels = label
+		else:
+			labels = np.hstack((labels,label))
+		# labels += label
+	np.save('cifar100_advs.npy', adv_imgs)
+	np.save('cifar100_labels.npy', labels)
+	print(np.max(adv_imgs), np.min(adv_imgs))
 	print('normal acc:', normal_correct / len(loader.dataset))
-	# print('adversarial acc:', adv_correct / len(loader.dataset))
+	print('adversarial acc:', adv_correct / len(loader.dataset))
 	
 
 	# # The `Adversarial` objects also provide a `distance` attribute. Note that the distances
 	# # can be 0 (misclassified without perturbation) and inf (attack failed).
-	# distances = np.asarray([a.distance.value for a in adversarials])
-	# print("{:.1e}, {:.1e}, {:.1e}".format(distances.min(), np.median(distances), distances.max()))
-	# print("{} of {} attacks failed".format(sum(adv.distance.value == np.inf for adv in adversarials), len(adversarials)))
-	# print("{} of {} inputs misclassified without perturbation".format(sum(adv.distance.value == 0 for adv in adversarials), len(adversarials)))
+	distances = np.asarray([a.distance.value for a in adversarials])
+	print("{:.1e}, {:.1e}, {:.1e}".format(distances.min(), np.median(distances), distances.max()))
+	print("{} of {} attacks failed".format(sum(adv.distance.value == np.inf for adv in adversarials), len(adversarials)))
+	print("{} of {} inputs misclassified without perturbation".format(sum(adv.distance.value == 0 for adv in adversarials), len(adversarials)))
