@@ -9,10 +9,10 @@ import sys
 import os
 
 def get_data(path = '/home/zhuzby/data'):
-	_CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
+	# _CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 	transform_test = transforms.Compose([
 			transforms.ToTensor(),
-			transforms.Normalize(_CIFAR_MEAN, _CIFAR_STD),
+			# transforms.Normalize(_CIFAR_MEAN, _CIFAR_STD),
 		])
 	testset = torchvision.datasets.CIFAR100(root=path, train=False, download=True, transform=transform_test)
 	testloader = torch.utils.data.DataLoader(
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 	_ = C(sys.argv[-1])
 	model = target_model(sys.argv[-2])
 	preprocessing = dict(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010], axis=-3)
-	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100)#, preprocessing=preprocessing)
+	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100, preprocessing=preprocessing)
 
 	normal_correct = 0
 	adv_correct = 0
@@ -54,13 +54,13 @@ if __name__ == '__main__':
 		adversarials = attack(images, label, unpack=False)
 		# adv_imgs += [a for a in adversarials]
 		adversarial_classes = fmodel.forward(adversarials).argmax(axis=-1)
+		adv_imgs += [a.perturbed for a in adversarials]
+		adversarial_classes = [a.adversarial_class for a in adversarials]
 		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
 		if labels == []:
 			labels = label
-			adv_imgs = copy.deepcopy(adversarials)
 		else:
 			labels = np.hstack((labels,label))
-			adv_imgs = copy.hstack((adv_imgs, adversarials))
 		# labels += label
 	np.save('cifar100_advs.npy', adv_imgs)
 	np.save('cifar100_labels.npy', labels)

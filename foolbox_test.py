@@ -19,9 +19,8 @@ adversarials = attack(images, labels, unpack=False)
 # if the attack fails to find an adversarial for the i'th image, then adversarials[i] will all be np.nan
 
 # Foolbox guarantees that all returned adversarials are in fact in adversarials
-print(np.mean(fmodel.forward(adversarials).argmax(axis=-1) == labels))
 print([a.adversarial_class for a in adversarials])
 # -> 0.0
-print(np.sum(adversarials[0]-images[0]))
+print(np.sum(adversarials[0].perturbed-images[0]))
 print(adversarials.shape)
 print(np.max(adversarials), np.min(adversarials))
