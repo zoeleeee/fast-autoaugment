@@ -53,7 +53,7 @@ if __name__ == '__main__':
 		normal_correct += np.sum(fmodel.forward(images).argmax(axis=-1) == label)
 		attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
 		adversarials = attack(images, label, unpack=False)
-		adv_imgs += [a.perturbed for a in adversarials]
+		adv_imgs += [a for a in adversarials]
 		adversarial_classes = np.asarray([a.adversarial_class for a in adversarials])
 		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
 		if labels == []:
