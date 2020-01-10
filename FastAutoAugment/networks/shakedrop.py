@@ -24,7 +24,7 @@ class ShakeDropFunction(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        print(grad_output)
+        # print(grad_output)
         gate = ctx.saved_tensors
         if len(gate) > 0:
             if gate[0].item() == 0:
