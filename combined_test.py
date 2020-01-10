@@ -31,6 +31,12 @@ def target_model(save_path):
 	return model
 
 def check_combined(imgs, nb_labels):
+	res = []
+	valids = np.ones(imgs.shape[0])
+	model_dir = 'models'
+	files = os.listdir(model_dir)
+	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
+	
 	if os.path.exists('res.npy'):
 		res = np.load('res.npy')
 		permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:len(files)].T
@@ -43,11 +49,7 @@ def check_combined(imgs, nb_labels):
 		print('adversarial acc:', len(wr) / imgs.shape[0])
 		return
 
-	res = []
-	valids = np.ones(imgs.shape[0])
-	model_dir = 'models'
-	files = os.listdir(model_dir)
-	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
+	
 	for i in np.arange(len(files)):
 		labels = label_permutation(np.load('cifar100_labels.npy'), nb_labels, i)
 		dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
