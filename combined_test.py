@@ -30,9 +30,18 @@ def target_model(save_path):
 		del data
 	return model
 
-if __name__ == '__main__':
-	_ = C('confs/pyramid272_cifar100_2_tl.yaml')
-	imgs = np.load('cifar100_advs.npy')
+def check_combined(imgs):
+	if os.path.exists('res.npy'):
+		res = np.load('res.npy')
+		permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:len(files)].T
+		res = np.array(res).T
+		wr = []
+		for i in np.arange(len(valids))[valids==0]:
+			if (True if res[i] == permuted_label else False for permuted_label in permutated_labels):
+				wr.append(i)
+		print('acc:', np.mean(valids))
+		print('adversarial acc:', len(wr) / imgs.shape[0])
+		return
 
 	res = []
 	valids = np.ones(imgs.shape[0])
@@ -40,7 +49,7 @@ if __name__ == '__main__':
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
 	for i in np.arange(len(files)):
-		labels = label_permutation(np.load('cifar100_labels.npy'), sys.argv[-1], i)
+		labels = label_permutation(np.load('cifar100_labels.npy'), nb_labels, i)
 		dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 		loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 		preds = []
@@ -69,14 +78,45 @@ if __name__ == '__main__':
 	np.save('res.npy', res)
 	np.save('valid.npy', valids)
 
-	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(sys.argv[-1]))[:len(files)].T
+	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:len(files)].T
 	res = np.array(res).T
 	wr = []
 	for i in np.arange(len(valids))[valids==0]:
 		if (True if res[i] == permuted_label else False for permuted_label in permutated_labels):
 			wr.append(i)
 	print('acc:', np.mean(valids))
-	print('wrong valid:', wr/len(valids))
+	print('adversarial acc:', len(wr) / imgs.shape[0])
 
-	print('normal acc:', normal_correct / imgs.shape[0])
-	print('adversarial acc:', adv_correct / imgs.shape[0])
+def check_origin(imgs, path='cifar100_pyramid272_top1_11.74.pth'):
+	model = target_model(path)
+	labels = label_permutation(np.load('cifar100_labels.npy'), nb_labels, i)
+	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
+	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+	preds = []
+	valid = []
+	path = entries[i]
+	model = target_model(path)
+	model.eval()
+	for images, label in loader:
+		outputs = model(images)
+		_, predicted = torch.max(outputs, 1)
+
+		_predicted = predicted.to('cpu').numpy()
+		_label = label.to('cpu').numpy()
+		if preds == []:
+			preds = _predicted
+			valid = (_predicted == _label)
+		else:
+			preds = np.hstack((preds, _predicted))
+			valid = np.hstack((valid, (_predicted==_label)))
+	print('acc:', np.mean(valid))
+
+if __name__ == '__main__':
+	imgs = np.load('cifar100_advs.npy')
+	nb_labels = sys.argv[-2]
+	if sys.argv[-1] == 'origin':
+		_ = C('confs/pyramid272_cifar100_2.yaml')
+		check_origin(imgs)
+	elif sys.argv[-1] == 'combined':
+		_ = C('confs/pyramid272_cifar100_2_tl.yaml')
+		check_combined(imgs, nb_labels)
