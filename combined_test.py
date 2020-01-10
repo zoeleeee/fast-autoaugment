@@ -76,8 +76,8 @@ def check_combined(imgs, nb_labels):
 	res = np.array(res).T
 	wr = []
 	for i in np.arange(len(valids))[valids==0]:
-		for permutated_label in permutated_labels:
-			if list(res[i]) == list(permutated_label):
+		for j in np.arange(len(permutated_labels)):
+			if list(res[i]) == list(permutated_labels[j]):
 				wr.append(i)
 				break
 	print('acc:', np.mean(valids))
