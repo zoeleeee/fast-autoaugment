@@ -46,11 +46,11 @@ if __name__ == '__main__':
 	labels = []
 	loader = get_data()
 	for images, label in loader:
-		images, label = images.numpy(), label.numpy()
-		print(label.shape)
-		print(np.max(images), np.min(images))
 		outputs = model(images)
 		_, predicted = torch.max(outputs, 1)
+		images, label = images.numpy(), label.numpy()
+		print(label.shape)
+		# print(np.max(images), np.min(images))
 		# images, labels = foolbox.utils.samples(dataset='cifar100', batchsize=64, data_format='channels_first', bounds=(0, 1))
 		_predicted = fmodel.forward(images).argmax(axis=-1)
 		print(np.sum(_predicted == predicted.cpu().numpy()))
