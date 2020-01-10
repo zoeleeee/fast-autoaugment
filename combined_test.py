@@ -37,7 +37,7 @@ def check_combined(imgs, nb_labels):
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
 	
-	for i in np.arange(len(files)):
+	for i in np.arange(10):#len(files)):
 		labels = label_permutation(np.load('cifar100_labels.npy'), nb_labels, i)
 		dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 		loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
