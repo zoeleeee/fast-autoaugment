@@ -36,7 +36,7 @@ def check_combined(imgs, nb_labels):
 	model_dir = 'models'
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
-	nb_files = 10 #len(files))
+	nb_files = len(files)
 
 	if not os.path.exists('res_{}.npy'.format(nb_files)):
 		for i in np.arange(nb_files):
@@ -74,11 +74,11 @@ def check_combined(imgs, nb_labels):
 
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:nb_files].T
 	res = np.array(res).T
-	wr = []
+	wr = {}
 	for i in np.arange(len(valids))[valids==0]:
 		for j in np.arange(len(permutated_labels)):
 			if list(res[i]) == list(permutated_labels[j]):
-				wr.append(i)
+				wr[i] = j
 				break
 	print('acc:', np.mean(valids))
 	print('adversarial acc:', len(wr) / imgs.shape[0])
