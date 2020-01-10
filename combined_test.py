@@ -94,7 +94,6 @@ def check_origin(imgs, path='cifar100_pyramid272_top1_11.74.pth'):
 	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 	preds = []
 	valid = []
-	path = entries[i]
 	model = target_model(path)
 	model.eval()
 	for images, label in loader:
