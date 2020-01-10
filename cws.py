@@ -35,7 +35,7 @@ def target_model(save_path):
 
 if __name__ == '__main__':
 	_ = C(sys.argv[-1])
-	model = target_model(sys.argv[-2])
+	model = target_model(sys.argv[-2]).eval()
 	# model.eval()
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
 	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100, preprocessing=preprocessing)
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 		# images, labels = foolbox.utils.samples(dataset='cifar100', batchsize=64, data_format='channels_first', bounds=(0, 1))
 		_predicted = fmodel.forward(images).argmax(axis=-1)
 		print(np.sum(_predicted == predicted.cpu().numpy()))
-		
+
 		normal_correct += np.sum(predicted.cpu().numpy() == label)
 		attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
 		adversarials = attack(images, label, unpack=False)
