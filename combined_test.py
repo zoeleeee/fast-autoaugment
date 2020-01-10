@@ -37,36 +37,40 @@ def check_combined(imgs, nb_labels):
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
 	nb_files = 10 #len(files))
-	
-	for i in np.arange(nb_files):
-		labels = label_permutation(np.load('cifar100_labels.npy'), nb_labels, i)
-		dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-		loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
-		preds = []
-		valid = []
-		path = entries[i]
-		model = target_model(path)
-		model.eval()
-		for images, label in loader:
-			outputs = model(images)
-			_, predicted = torch.max(outputs, 1)
 
-			_predicted = predicted.to('cpu').numpy()
-			_label = label.to('cpu').numpy()
-			if preds == []:
-				preds = _predicted
-				valid = (_predicted == _label)
-			else:
-				preds = np.hstack((preds, _predicted))
-				valid = np.hstack((valid, (_predicted==_label)))
-		valids = [valids[i] and valid[i] for i in range(len(valids))]
-		res.append(preds)
-		del loader
-		del dataset
-		del labels
-	
-	np.save('res.npy', res)
-	np.save('valid.npy', valids)
+	if not os.path.exists('res_{}.npy'.format(nb_files)):
+		for i in np.arange(nb_files):
+			labels = label_permutation(np.load('cifar100_labels.npy'), nb_labels, i)
+			dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
+			loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+			preds = []
+			valid = []
+			path = entries[i]
+			model = target_model(path)
+			model.eval()
+			for images, label in loader:
+				outputs = model(images)
+				_, predicted = torch.max(outputs, 1)
+
+				_predicted = predicted.to('cpu').numpy()
+				_label = label.to('cpu').numpy()
+				if preds == []:
+					preds = _predicted
+					valid = (_predicted == _label)
+				else:
+					preds = np.hstack((preds, _predicted))
+					valid = np.hstack((valid, (_predicted==_label)))
+			valids = [valids[i] and valid[i] for i in range(len(valids))]
+			res.append(preds)
+			del loader
+			del dataset
+			del labels
+		
+		np.save('res_{}.npy'.format(nb_files), res)
+		np.save('valid_{}.npy'.format(nb_files), valids)
+	else:
+		res = np.load('res_{}.npy'.format(nb_files))
+		valids = np.load('valid_{}.npy'.format(nb_files))
 
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:nb_files].T
 	res = np.array(res).T
