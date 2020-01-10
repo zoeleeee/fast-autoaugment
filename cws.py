@@ -12,7 +12,7 @@ def get_data(path = '/home/zhuzby/data'):
 	_CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 	transform_test = transforms.Compose([
 			transforms.ToTensor(),
-			# transforms.Normalize(_CIFAR_MEAN, _CIFAR_STD),
+			transforms.Normalize(_CIFAR_MEAN, _CIFAR_STD),
 		])
 	testset = torchvision.datasets.CIFAR100(root=path, train=False, download=True, transform=transform_test)
 	testloader = torch.utils.data.DataLoader(
@@ -36,7 +36,7 @@ def target_model(save_path):
 if __name__ == '__main__':
 	_ = C(sys.argv[-1])
 	model = target_model(sys.argv[-2])
-	preprocessing = dict(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010], axis=-3)
+	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
 	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100, preprocessing=preprocessing)
 
 	normal_correct = 0
