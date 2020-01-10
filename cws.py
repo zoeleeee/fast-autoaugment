@@ -65,6 +65,7 @@ if __name__ == '__main__':
 			labels = label
 		else:
 			labels = np.hstack((labels,label))
+		break
 		# labels += label
 	np.save('cifar100_advs.npy', adv_imgs)
 	np.save('cifar100_labels.npy', labels)

@@ -27,7 +27,7 @@ class ShakeDropFunction(torch.autograd.Function):
         # print(ctx.saved_tensors)
         gate = ctx.saved_tensors
         if len(gate) > 0:
-            if gate.item() == 0:
+            if gate[0].item() == 0:
                 beta = torch.cuda.FloatTensor(grad_output.size(0)).uniform_(0, 1)
                 beta = beta.view(beta.size(0), 1, 1, 1).expand_as(grad_output)
                 beta = Variable(beta)
