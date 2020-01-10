@@ -30,7 +30,7 @@ def target_model(save_path):
 		del data
 	return model
 
-def check_combined(imgs):
+def check_combined(imgs, nb_labels):
 	if os.path.exists('res.npy'):
 		res = np.load('res.npy')
 		permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:len(files)].T
