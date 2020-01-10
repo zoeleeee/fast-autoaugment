@@ -89,7 +89,7 @@ def check_combined(imgs):
 
 def check_origin(imgs, path='cifar100_pyramid272_top1_11.74.pth'):
 	model = target_model(path)
-	labels = label_permutation(np.load('cifar100_labels.npy'), nb_labels, i)
+	labels = np.load('cifar100_labels.npy')
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 	preds = []
