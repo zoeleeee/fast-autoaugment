@@ -36,9 +36,10 @@ def check_combined(imgs, nb_labels):
 	model_dir = 'models'
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
-	
+
 	if os.path.exists('res.npy'):
 		res = np.load('res.npy')
+		valids = np.load('valid.npy')
 		permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:len(files)].T
 		res = np.array(res).T
 		wr = []
