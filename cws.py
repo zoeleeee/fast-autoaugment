@@ -16,7 +16,7 @@ def get_data(path = '/home/zhuzby/data'):
 		])
 	testset = torchvision.datasets.CIFAR100(root=path, train=False, download=True, transform=transform_test)
 	testloader = torch.utils.data.DataLoader(
-		testset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True,
+		testset, batch_size=20, shuffle=False, num_workers=32, pin_memory=True,
 		drop_last=False
 	)
 	return testloader
