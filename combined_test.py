@@ -42,9 +42,9 @@ def check_combined(imgs, label_path, nb_labels):
 		for i in np.arange(nb_files):
 			labels = label_permutation(np.load(label_path), nb_labels, i)
 			dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-			loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
-			preds = []
-			valid = []
+			loader = data.DataLoader(dataset, batch_size=20, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+			preds = None
+			valid = None
 			path = entries[i]
 			model = target_model(path)
 			model.eval()
@@ -54,7 +54,7 @@ def check_combined(imgs, label_path, nb_labels):
 
 				_predicted = predicted.to('cpu').numpy()
 				_label = label.to('cpu').numpy()
-				if preds == []:
+				if preds == None:
 					preds = _predicted
 					valid = (_predicted == _label)
 				else:
@@ -89,7 +89,7 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth'):
 	model = target_model(path)
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+	loader = data.DataLoader(dataset, batch_size=20, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 	preds = []
 	valid = []
 	model = target_model(path)
