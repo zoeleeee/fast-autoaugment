@@ -33,25 +33,8 @@ def target_model(save_path):
 		del data
 	return model
 
-def get_normal_data():
-	loader = get_data()
-	imgs = []
-	labels = []
-	for images, label in loader:
-		images, label = images.numpy(), label.numpy()
-		if len(imgs) == 0:
-			imgs = images
-			labels = label
-		else:
-			imgs = np.hstack((imgs, images))
-			labels = np.hstack((labels, label))
-	np.save('cifar100_advs_10000.npy', imgs)
-	np.save('cifar100_labels_10000.npy', labels)
-
 
 if __name__ == '__main__':
-	get_normal_data()
-	return
 	_ = C(sys.argv[-1])
 	model = target_model(sys.argv[-2]).eval()
 	# model.eval()

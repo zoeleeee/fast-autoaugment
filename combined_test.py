@@ -10,6 +10,7 @@ import os
 from torch.utils import data
 import copy
 from FastAutoAugment.metrics import accuracy
+from cws import get_data
 
 def label_permutation(labels, nb_labels, classifier_id):
     permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(classifier_id)]
@@ -110,7 +111,23 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth'):
 			valid = np.hstack((valid, (_predicted==_label)))
 	print('acc:', np.mean(valid))
 
+def get_normal_data():
+	loader = get_data()
+	imgs = []
+	labels = []
+	for images, label in loader:
+		images, label = images.numpy(), label.numpy()
+		if len(imgs) == 0:
+			imgs = images
+			labels = label
+		else:
+			imgs = np.hstack((imgs, images))
+			labels = np.hstack((labels, label))
+	np.save('cifar100_advs_10000.npy', imgs)
+	np.save('cifar100_labels_10000.npy', labels)
+
 if __name__ == '__main__':
+	get_normal_data()
 	idx = sys.argv[-2]
 	label_path = 'cifar100_labels_{}.npy'.format(idx)
 	imgs = np.load('cifar100_advs_{}.npy'.format(idx))
