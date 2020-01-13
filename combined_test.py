@@ -83,7 +83,7 @@ def check_combined(imgs, label_path, nb_labels):
 	print('acc:', np.mean(valids))
 	print('adversarial acc:', len(wr) / imgs.shape[0])
 
-def check_origin(imgs, path='cifar100_pyramid272_top1_11.74.pth', label_path):
+def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth'):
 	model = target_model(path)
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
