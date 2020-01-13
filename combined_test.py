@@ -60,7 +60,7 @@ def check_combined(imgs, label_path, nb_labels):
 				else:
 					preds = np.hstack((preds, _predicted))
 					valid = np.hstack((valid, (_predicted==_label)))
-			valids = [valids[i] and valid[i] for i in range(len(valids))]
+			valids = [valids[j] and valid[j] for j in range(len(valids))]
 			res.append(preds)
 			del loader
 			del dataset
