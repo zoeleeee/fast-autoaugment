@@ -30,7 +30,7 @@ def target_model(save_path):
 		del data
 	return model
 
-def check_combined(imgs, label_path, nb_labels):
+def check_combined(imgs, label_path, nb_labels, idx):
 	res = []
 	valids = np.ones(imgs.shape[0])
 	model_dir = 'models'
@@ -68,11 +68,11 @@ def check_combined(imgs, label_path, nb_labels):
 		
 		res = np.array(res).T
 		valids = np.array(valids)
-		np.save('res_{}.npy'.format(nb_files), res)
-		np.save('valid_{}.npy'.format(nb_files), valids)
+		np.save('res_{}_{}.npy'.format(nb_files, idx), res)
+		np.save('valid_{}_{}.npy'.format(nb_files, idx), valids)
 	else:
-		res = np.load('res_{}.npy'.format(nb_files))
-		valids = np.load('valid_{}.npy'.format(nb_files))
+		res = np.load('res_{}_{}.npy'.format(nb_files, idx))
+		valids = np.load('valid_{}_{}.npy'.format(nb_files, idx))
 
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:nb_files].T
 	wr = {}
@@ -118,4 +118,4 @@ if __name__ == '__main__':
 		check_origin(imgs, label_path)
 	elif sys.argv[-1] == 'combined':
 		_ = C('confs/pyramid272_cifar100_2_tl.yaml')
-		check_combined(imgs, label_path, nb_labels)
+		check_combined(imgs, label_path, nb_labels, idx)
