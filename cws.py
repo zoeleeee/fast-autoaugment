@@ -46,7 +46,10 @@ if __name__ == '__main__':
 	labels = []
 	loader = get_data()
 	print(len(loader.dataset))
+	cnt = 0
 	for images, label in loader:
+		cnt += 1
+		print(cnt,'/5000')
 		outputs = model(images)
 		_, predicted = torch.max(outputs, 1)
 		images, label = images.numpy(), label.numpy()
@@ -66,10 +69,11 @@ if __name__ == '__main__':
 			labels = label
 		else:
 			labels = np.hstack((labels,label))
+		np.save('cifar100_advs.npy', adv_imgs)
+		np.save('cifar100_labels.npy', labels)
 		# break
 		# labels += label
-	np.save('cifar100_advs.npy', adv_imgs)
-	np.save('cifar100_labels.npy', labels)
+	
 	print(np.max(adv_imgs), np.min(adv_imgs))
 	print('normal acc:', normal_correct / len(loader.dataset))
 	print('adversarial acc:', adv_correct / len(loader.dataset))
