@@ -122,7 +122,7 @@ def get_normal_data():
 			imgs = images
 			labels = label
 		else:
-			imgs = np.hstack((imgs, images))
+			imgs = np.vstack((imgs, images))
 			labels = np.hstack((labels, label))
 
 	np.save('cifar100_advs_10000.npy', imgs)
