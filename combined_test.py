@@ -75,7 +75,8 @@ def check_combined(imgs, label_path, nb_labels):
 	for i in np.arange(len(res)):
 		if np.sum(res[i] - _res[i]) > 0:
 			print(res[i], _res[i])
-	print([valids[i] and _valids[i] for i in np.arange(valids)])
+	print(np.sum(valids-_valids))
+
 
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:nb_files].T
 	res = np.array(res).T
