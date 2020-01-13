@@ -129,7 +129,7 @@ def get_normal_data():
 	np.save('cifar100_labels_10000.npy', labels)
 
 if __name__ == '__main__':
-	get_normal_data()
+	# get_normal_data()
 	idx = sys.argv[-2]
 	label_path = 'cifar100_labels_{}.npy'.format(idx)
 	imgs = np.load('cifar100_advs_{}.npy'.format(idx))
