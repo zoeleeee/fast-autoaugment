@@ -75,13 +75,14 @@ def check_combined(imgs, label_path, nb_labels):
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:nb_files].T
 	res = np.array(res).T
 	wr = {}
+	labels = np.load(label_path)
 	for i in np.arange(len(valids))[valids==0]:
 		for j in np.arange(len(permutated_labels)):
 			if list(res[i]) == list(permutated_labels[j]):
 				wr[i] = j
-				break
+				print('wrong#', i, labels[i], j)
 	print('acc:', np.mean(valids))
-	print('adversarial acc:', len(wr) / imgs.shape[0])
+	print('adversarial acc:', len(wr)/imgs.shape[0])
 
 def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth'):
 	model = target_model(path)
