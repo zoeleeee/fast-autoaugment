@@ -43,8 +43,8 @@ def check_combined(imgs, label_path, nb_labels):
 			labels = label_permutation(np.load(label_path), nb_labels, i)
 			dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 			loader = data.DataLoader(dataset, batch_size=20, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
-			preds = None
-			valid = None
+			preds = []
+			valid = []
 			path = entries[i]
 			model = target_model(path)
 			model.eval()
@@ -54,7 +54,7 @@ def check_combined(imgs, label_path, nb_labels):
 
 				_predicted = predicted.to('cpu').numpy()
 				_label = label.to('cpu').numpy()
-				if preds == None:
+				if len(preds) == 0:
 					preds = _predicted
 					valid = (_predicted == _label)
 				else:
