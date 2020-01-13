@@ -117,12 +117,14 @@ def get_normal_data():
 	labels = []
 	for images, label in loader:
 		images, label = images.numpy(), label.numpy()
+		print(images.shape, label.shape)
 		if len(imgs) == 0:
 			imgs = images
 			labels = label
 		else:
 			imgs = np.hstack((imgs, images))
 			labels = np.hstack((labels, label))
+
 	np.save('cifar100_advs_10000.npy', imgs)
 	np.save('cifar100_labels_10000.npy', labels)
 
