@@ -38,9 +38,10 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
 	nb_files = 10#len(files)
 
-	if not os.path.exists('res_{}_{}.npy'.format(nb_files, idx)):
+	if not os.path.exists('res_{}_{}.npy'.format(nb_files,idx)):
 		for i in np.arange(nb_files):
 			labels = label_permutation(np.load(label_path), nb_labels, i)
+			print(labels.size())
 			dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 			loader = data.DataLoader(dataset, batch_size=20, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 			preds = []
@@ -49,6 +50,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 			model = target_model(path)
 			model.eval()
 			for images, label in loader:
+				print(images.size(), label.size())
 				outputs = model(images)
 				_, predicted = torch.max(outputs, 1)
 
