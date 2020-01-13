@@ -67,7 +67,7 @@ def check_combined(imgs, label_path, nb_labels):
 			del labels
 		
 		res = np.array(res).T
-		valid = np.array(valids)
+		valids = np.array(valids)
 		np.save('res_{}.npy'.format(nb_files), res)
 		np.save('valid_{}.npy'.format(nb_files), valids)
 	else:
