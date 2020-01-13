@@ -41,7 +41,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	if not os.path.exists('res_{}_{}.npy'.format(nb_files,idx)):
 		for i in np.arange(nb_files):
 			labels = label_permutation(np.load(label_path), nb_labels, i)
-			print(labels.size())
+			print(labels.shape)
 			dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 			loader = data.DataLoader(dataset, batch_size=20, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 			preds = []
