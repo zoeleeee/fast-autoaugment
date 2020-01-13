@@ -30,7 +30,7 @@ def target_model(save_path):
 		del data
 	return model
 
-def check_combined(imgs, nb_labels):
+def check_combined(imgs, label_path, nb_labels):
 	res = []
 	valids = np.ones(imgs.shape[0])
 	model_dir = 'models'
@@ -40,7 +40,7 @@ def check_combined(imgs, nb_labels):
 
 	if not os.path.exists('res_{}.npy'.format(nb_files)):
 		for i in np.arange(nb_files):
-			labels = label_permutation(np.load('cifar100_labels.npy'), nb_labels, i)
+			labels = label_permutation(np.load(label_path), nb_labels, i)
 			dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 			loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 			preds = []
@@ -83,9 +83,9 @@ def check_combined(imgs, nb_labels):
 	print('acc:', np.mean(valids))
 	print('adversarial acc:', len(wr) / imgs.shape[0])
 
-def check_origin(imgs, path='cifar100_pyramid272_top1_11.74.pth'):
+def check_origin(imgs, path='cifar100_pyramid272_top1_11.74.pth', label_path):
 	model = target_model(path)
-	labels = np.load('cifar100_labels.npy')
+	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 	preds = []
@@ -107,11 +107,13 @@ def check_origin(imgs, path='cifar100_pyramid272_top1_11.74.pth'):
 	print('acc:', np.mean(valid))
 
 if __name__ == '__main__':
-	imgs = np.load('cifar100_advs.npy')
-	nb_labels = sys.argv[-2]
+	idx = sys.argv[-2]
+	label_path = 'cifar100_labels_{}.npy'.format(idx)
+	imgs = np.load('cifar100_advs_{}.npy'.format(idx))
+	nb_labels = sys.argv[-3]
 	if sys.argv[-1] == 'origin':
 		_ = C('confs/pyramid272_cifar100_2.yaml')
-		check_origin(imgs)
+		check_origin(imgs, label_path)
 	elif sys.argv[-1] == 'combined':
 		_ = C('confs/pyramid272_cifar100_2_tl.yaml')
-		check_combined(imgs, nb_labels)
+		check_combined(imgs, label_path, nb_labels)
