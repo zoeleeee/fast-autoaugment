@@ -38,7 +38,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) for file in files}
 	nb_files = 10#len(files)
 
-	if not os.path.exists('res_{}.npy'.format(nb_files)):
+	if not os.path.exists('res_{}_{}.npy'.format(nb_files, idx)):
 		for i in np.arange(nb_files):
 			labels = label_permutation(np.load(label_path), nb_labels, i)
 			dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
