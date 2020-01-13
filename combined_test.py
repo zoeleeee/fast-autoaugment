@@ -43,7 +43,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 			labels = label_permutation(np.load(label_path), nb_labels, i)
 			# print(labels.shape)
 			dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-			loader = data.DataLoader(dataset, batch_size=20, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+			loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 			preds = []
 			valid = []
 			path = entries[i]
@@ -91,7 +91,7 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth'):
 	model = target_model(path)
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-	loader = data.DataLoader(dataset, batch_size=20, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 	preds = []
 	valid = []
 	model = target_model(path)
@@ -112,8 +112,9 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth'):
 
 if __name__ == '__main__':
 	idx = sys.argv[-2]
-	label_path = 'cifar100_labels_{}.npy'.format(idx)
-	imgs = np.load('cifar100_advs_{}.npy'.format(idx))
+	
+	# label_path = 'cifar100_labels_{}.npy'.format(idx)
+	# imgs = np.load('cifar100_advs_{}.npy'.format(idx))
 	nb_labels = sys.argv[-3]
 	if sys.argv[-1] == 'origin':
 		_ = C('confs/pyramid272_cifar100_2.yaml')
