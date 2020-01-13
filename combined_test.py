@@ -66,20 +66,15 @@ def check_combined(imgs, label_path, nb_labels):
 			del dataset
 			del labels
 		
+		res = np.array(res).T
+		valid = np.array(valids)
 		np.save('res_{}.npy'.format(nb_files), res)
 		np.save('valid_{}.npy'.format(nb_files), valids)
-	# else:
-	_res = np.load('res_{}.npy'.format(nb_files))
-	_valids = np.load('valid_{}.npy'.format(nb_files))
-
-	for i in np.arange(len(res)):
-		if np.sum(res[i] - _res[i]) > 0:
-			print(res[i], _res[i])
-	print(np.sum(valids-_valids))
-
+	else:
+		res = np.load('res_{}.npy'.format(nb_files))
+		valids = np.load('valid_{}.npy'.format(nb_files))
 
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:nb_files].T
-	res = np.array(res).T
 	wr = {}
 	labels = np.load(label_path)
 	for i in np.arange(len(valids))[valids==0]:
