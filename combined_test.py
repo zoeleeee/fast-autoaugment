@@ -36,7 +36,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	valids = np.ones(imgs.shape[0])
 	model_dir = 'models'
 	files = os.listdir(model_dir)
-	entries = {int(file.split('_')[-5]): os.path.join(model_dir, file) if len(file.split('_')) > 9 else continue for file in files}
+	entries = {int(file.split('_')[-5]) if len(file.split('_')) > 9 else -1 : os.path.join(model_dir, file)  for file in files}
 	print(entries)
 	nb_files = len(files)
 
