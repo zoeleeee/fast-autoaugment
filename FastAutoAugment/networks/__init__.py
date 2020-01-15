@@ -7,7 +7,7 @@ import torch.backends.cudnn as cudnn
 
 from FastAutoAugment.networks.resnet import ResNet
 from FastAutoAugment.networks.pyramidnet import PyramidNet
-from FastAutoAugment.networks.plus import Plus
+from FastAutoAugment.networks.pyramidnet_plus import Plus
 from FastAutoAugment.networks.shakeshake.shake_resnet import ShakeResNet
 from FastAutoAugment.networks.wideresnet import WideResNet
 from FastAutoAugment.networks.shakeshake.shake_resnext import ShakeResNeXt
