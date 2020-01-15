@@ -7,6 +7,7 @@ import torch.backends.cudnn as cudnn
 
 from FastAutoAugment.networks.resnet import ResNet
 from FastAutoAugment.networks.pyramidnet import PyramidNet
+from FastAutoAugment.networks.plus import Plus
 from FastAutoAugment.networks.shakeshake.shake_resnet import ShakeResNet
 from FastAutoAugment.networks.wideresnet import WideResNet
 from FastAutoAugment.networks.shakeshake.shake_resnext import ShakeResNeXt
@@ -38,6 +39,8 @@ def get_model(conf, num_class=10, data_parallel=True):
 
     elif name == 'pyramid':
         model = PyramidNet('cifar10', depth=conf['depth'], alpha=conf['alpha'], num_classes=num_class, bottleneck=conf['bottleneck'])
+    elif name == 'plus':
+        model = Plus('cifar10', depth=conf['depth'], alpha=conf['alpha'], num_classes=num_class, bottleneck=conf['bottleneck'])
     else:
         raise NameError('no model named, %s' % name)
 
