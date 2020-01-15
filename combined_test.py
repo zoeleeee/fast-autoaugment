@@ -37,8 +37,10 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	model_dir = 'models'
 	files = os.listdir(model_dir)
 	entries = {int(file.split('_')[-5]) if len(file.split('_')) > 9 else -1 : os.path.join(model_dir, file)  for file in files}
+	if -1 in entries.keys():
+		del entries[-1]
 	print(entries)
-	nb_files = len(files)
+	nb_files = len(entries)
 
 	if not os.path.exists('res_{}_{}.npy'.format(nb_files,idx)):
 		for i in np.arange(nb_files):
