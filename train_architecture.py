@@ -173,7 +173,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
             logger.info('checkpoint epoch@%d' % data['epoch'])
             if not isinstance(model, DataParallel):
                 # only for Pyramid cifar100
-                weights = {k.replace('module.', ''): v for k, v in data[key].items()}
+                weights = {k.replace('module.', 'module.model.'): v for k, v in data[key].items()}
                 weights['fc.weight'] = torch.rand_like(model.state_dict()['fc.weight'])
                 weights['fc.bias'] = torch.rand_like(model.state_dict()['fc.bias'])
                 model.load_state_dict(weights)
@@ -192,7 +192,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
         else:
             print('stop and check the pth file')
             return
-            model.load_state_dict({k: v for k, v in data.items()})
+            model.load_state_dict({k.replace('module', 'module.model'): v for k, v in data.items()})
         del data
     else:
         logger.info('"%s" file not found. skip to pretrain weights...' % save_path)
