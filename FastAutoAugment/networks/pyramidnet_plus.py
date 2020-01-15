@@ -12,3 +12,4 @@ class Plus(nn.Module):
 	def forward(self, x):
 		x = self.model(x)
 		x = self.fc(x)
+		return x
