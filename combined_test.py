@@ -62,7 +62,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 
 				_predicted = predicted.to('cpu').numpy()
 				_label = label.to('cpu').numpy()
-				_score = sc.to('cpu').numpy()
+				_score = sc.detach().cpu().numpy()
 				if len(preds) == 0:
 					preds = _predicted
 					valid = (_predicted == _label)
