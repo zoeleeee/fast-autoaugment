@@ -43,7 +43,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	print(entries)
 	nb_files = len(entries)
 	# order = np.random.permutation(nb_files)+10
-	if not os.path.exists('res_{}_{}.npy'.format(nb_files,idx)):
+	if not os.path.exists('_res_{}_{}.npy'.format(nb_files,idx)):
 		for i in np.arange(nb_files):
 			labels = label_permutation(np.load(label_path), nb_labels, i)
 			# print(labels.shape)
@@ -80,13 +80,13 @@ def check_combined(imgs, label_path, nb_labels, idx):
 		
 		res = np.array(res).T
 		valids = np.array(valids)
-		np.save('res_{}_{}.npy'.format(nb_files, idx), res)
-		np.save('valid_{}_{}.npy'.format(nb_files, idx), valids)
-		np.save('score_{}_{}.npy'.format(nb_files, idx), scores)
+		np.save('_res_{}_{}.npy'.format(nb_files, idx), res)
+		np.save('_valid_{}_{}.npy'.format(nb_files, idx), valids)
+		np.save('_score_{}_{}.npy'.format(nb_files, idx), scores)
 	else:
-		res = np.load('res_{}_{}.npy'.format(nb_files, idx))
-		valids = np.load('valid_{}_{}.npy'.format(nb_files, idx))
-		scores = np.load('score_{}_{}.npy'.format(nb_files, idx))
+		res = np.load('_res_{}_{}.npy'.format(nb_files, idx))
+		valids = np.load('_valid_{}_{}.npy'.format(nb_files, idx))
+		scores = np.load('_score_{}_{}.npy'.format(nb_files, idx))
 
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:nb_files].T
 	wr = {}
