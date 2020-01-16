@@ -33,6 +33,7 @@ def target_model(save_path):
 
 def check_combined(imgs, label_path, nb_labels, idx):
 	res = []
+	scores = []
 	valids = np.ones(imgs.shape[0])
 	model_dir = 'models'
 	files = os.listdir(model_dir)
@@ -40,7 +41,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	if -1 in entries.keys():
 		del entries[-1]
 	print(entries)
-	nb_files = 10#len(entries)
+	nb_files = len(entries)
 	# order = np.random.permutation(nb_files)+10
 	if not os.path.exists('res_{}_{}.npy'.format(nb_files,idx)):
 		for i in np.arange(nb_files):
@@ -50,24 +51,29 @@ def check_combined(imgs, label_path, nb_labels, idx):
 			loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 			preds = []
 			valid = []
+			score = []
 			path = entries[i]
 			model = target_model(path)
 			model.eval()
 			for images, label in loader:
 				# print(images.size(), label.size())
 				outputs = model(images)
-				_, predicted = torch.max(outputs, 1)
+				sc, predicted = torch.max(outputs, 1)
 
 				_predicted = predicted.to('cpu').numpy()
 				_label = label.to('cpu').numpy()
+				_score = sc.to('cpu').numpy()
 				if len(preds) == 0:
 					preds = _predicted
 					valid = (_predicted == _label)
+					score = _score
 				else:
 					preds = np.hstack((preds, _predicted))
 					valid = np.hstack((valid, (_predicted==_label)))
+					score = np.hstack((score, _score))
 			valids = [valids[j] and valid[j] for j in range(len(valids))]
 			res.append(preds)
+			scores.append(score)
 			del loader
 			del dataset
 			del labels
@@ -76,9 +82,11 @@ def check_combined(imgs, label_path, nb_labels, idx):
 		valids = np.array(valids)
 		np.save('res_{}_{}.npy'.format(nb_files, idx), res)
 		np.save('valid_{}_{}.npy'.format(nb_files, idx), valids)
+		np.save('score_{}_{}.npy'.format(nb_files, idx), scores)
 	else:
 		res = np.load('res_{}_{}.npy'.format(nb_files, idx))
 		valids = np.load('valid_{}_{}.npy'.format(nb_files, idx))
+		scores = np.load('score_{}_{}.npy'.format(nb_files, idx))
 
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[:nb_files].T
 	wr = {}
