@@ -41,7 +41,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 		del entries[-1]
 	print(entries)
 	nb_files = 10#len(entries)
-
+	# order = np.random.permutation(nb_files)+10
 	if not os.path.exists('res_{}_{}.npy'.format(nb_files,idx)):
 		for i in np.arange(nb_files):
 			labels = label_permutation(np.load(label_path), nb_labels, i)
