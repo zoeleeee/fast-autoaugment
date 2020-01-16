@@ -1,5 +1,5 @@
 import numpy as np
-import sys
+import sys 	
 
 def evaluation(nb_res):
 	rep = np.load('2_label_permutation_cifar100.npy')[10:40]
@@ -9,8 +9,8 @@ def evaluation(nb_res):
 	ex_labels = [[rep[i][j] for j in labels] for i in orders]
 	valid = samples == ex_labels
 	sep_valid = [[np.max(val[j:j+3]) for j in np.arange(valid.shape[-1])[::3]] for val in valid]
-	valid = np.sum(sep_valid, axis=-1)==10
-	print('acc:', np.sum(valid))
+	valid = np.sum(sep_valid, axis=-1)
+	print('acc:', np.sum(valid==10))
 
 if __name__ == '__main__':
 	evaluation(sys.argv[-1])
