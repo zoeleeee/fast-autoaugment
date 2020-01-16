@@ -10,6 +10,7 @@ def evaluation(nb_res):
 	valid = samples == ex_labels
 	sep_valid = [[np.max(val[j:j+3]) for j in np.arange(valid.shape[-1])[::3]] for val in valid]
 	valid = np.sum(sep_valid, axis=-1)
+	print(sep_valid.shape, valid.shape)
 	print('acc:', np.sum(valid==10))
 
 if __name__ == '__main__':
