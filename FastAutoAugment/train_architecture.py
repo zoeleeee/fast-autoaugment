@@ -173,7 +173,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
             logger.info('checkpoint epoch@%d' % data['epoch'])
             if not isinstance(model, DataParallel):
                 # only for Pyramid cifar100
-                weights = {k if 'module.model' in k else 'module.model.'+k: v for k, v in data[key].items()}
+                weights = {k : v for k, v in data[key].items()}
                 # weights = {k.replace('module.', 'module.model.'): v for k, v in data[key].items()}
                 # weights['module.model.fc.weight'] = torch.rand_like(model.state_dict()['module.model.fc.weight'])
                 # weights['module.model.fc.bias'] = torch.rand_like(model.state_dict()['module.model.fc.bias'])
@@ -181,7 +181,9 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                 # weights['module.fc.bias'] = torch.rand_like(model.state_dict()['module.fc.bias'])
                 model.load_state_dict(weights)
             else:
-                weights = {k if 'module.model' in k else 'module.model.'+k: v for k, v in data[key].items()}
+                weights = {k : v for k, v in data[key].items()}
+                
+                # weights = {k if 'module.model' in k else 'module.model.'+k: v for k, v in data[key].items()}
                 # print(weights)
                 # weights['module.model.fc.weight'] = torch.rand_like(model.state_dict()['module.model.fc.weight'])
                 # weights['module.model.fc.bias'] = torch.rand_like(model.state_dict()['module.model.fc.bias'])
