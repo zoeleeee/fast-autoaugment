@@ -1,4 +1,6 @@
-import numpy as np 
+import numpy as np
+import sys
+
 def evaluation(nb_res):
 	rep = np.load('2_label_permutation_cifar100.npy')[10:40]
 	samples = np.load('res_48_{}.npy'.format(nb_res)).T[10:40]
