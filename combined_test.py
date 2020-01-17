@@ -58,7 +58,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 			model.eval()
 			for images, label in loader:
 				# print(images.size(), label.size())
-				outputs = F.softmax(model(images), axis=-1)
+				outputs = F.softmax(model(images), dim=-1)
 				sc, predicted = torch.max(outputs, 1)
 
 				_predicted = predicted.to('cpu').numpy()
