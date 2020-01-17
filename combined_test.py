@@ -11,6 +11,7 @@ from torch.utils import data
 import copy
 from FastAutoAugment.metrics import accuracy
 from cws import get_data
+import torch.nn.functional as F
 
 def label_permutation(labels, nb_labels, classifier_id):
     permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(classifier_id)]
@@ -57,7 +58,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 			model.eval()
 			for images, label in loader:
 				# print(images.size(), label.size())
-				outputs = model(images)
+				outputs = F.softmax(model(images), axis=-1)
 				sc, predicted = torch.max(outputs, 1)
 
 				_predicted = predicted.to('cpu').numpy()
