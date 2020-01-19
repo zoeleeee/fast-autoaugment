@@ -91,6 +91,8 @@ def check_combined(imgs, label_path, nb_labels, idx):
 		scores = np.load('_score_{}_{}.npy'.format(nb_files, idx))
 
 	permutated_labels = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(min(entries.keys())):int(max(entries.keys()))].T
+	print(len(entries), permutated_labels.shape)
+	print(np.sum(valids==0))
 	wr = {}
 	labels = np.load(label_path)
 	for i in np.arange(len(valids))[valids==0]:
