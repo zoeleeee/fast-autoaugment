@@ -118,12 +118,14 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth'):
 
 		_predicted = predicted.to('cpu').numpy()
 		_label = label.to('cpu').numpy()
-		if preds == []:
+		if len(preds) == 0:
 			preds = _predicted
 			valid = (_predicted == _label)
 		else:
 			preds = np.hstack((preds, _predicted))
 			valid = np.hstack((valid, (_predicted==_label)))
+	np.save('_100_classifier_preds.npy', preds)
+	np.save('_100_classifier_valids.npy', valid)
 	print('acc:', np.mean(valid))
 
 def get_normal_data():
