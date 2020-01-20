@@ -50,6 +50,8 @@ if __name__ == '__main__':
 	cnt = 0
 	for images, label in loader:
 		cnt += 1
+		if cnt < 11:
+			continue
 		print(cnt,'/5000')
 		outputs = model(images)
 		_, predicted = torch.max(outputs, 1)
