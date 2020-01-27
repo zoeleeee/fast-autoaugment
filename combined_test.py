@@ -42,7 +42,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	if -1 in entries.keys():
 		del entries[-1]
 	print(entries)
-	nb_files = len(entries)
+	nb_files = 30#len(entries)
 	# order = np.random.permutation(nb_files)+10
 	if not os.path.exists('_res_{}_{}.npy'.format(nb_files,idx)):
 		for i in np.arange(nb_files)+int(min(entries.keys())):
