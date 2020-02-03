@@ -103,7 +103,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	print('acc:', np.mean(valids))
 	print('adversarial acc:', len(wr)/imgs.shape[0])
 
-def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500epochs.pth', nb_labels=100):
+def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500epochs.pth', nb_labels=30):
 	reps = np.load('2_label_permutation_cifar100.npy')[:100].T
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
@@ -184,10 +184,10 @@ if __name__ == '__main__':
 	nb_labels = sys.argv[-3]
 	if sys.argv[-1] == 'origin':
 		_ = C('confs/pyramid272_cifar100_2.yaml')
-		check_origin(imgs, label_path, nb_labels=nb_labels)
+		check_origin(imgs, label_path, nb_labels=int(nb_labels))
 	elif sys.argv[-1] == 'classifier':
 		_ = C('confs/pyramid272_cifar100_2.yaml')
-		check_classifier(imgs, label_path, nb_labels=nb_labels)
+		check_classifier(imgs, label_path, nb_labels=int(nb_labels))
 	elif sys.argv[-1] == 'combined':
 		_ = C('confs/pyramid272_cifar100_2_tl.yaml')
 		check_combined(imgs, label_path, nb_labels, idx)
