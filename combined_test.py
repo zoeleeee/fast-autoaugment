@@ -129,7 +129,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 		else:
 			preds = np.vstack((preds, _predict))
 			valid = np.hstack((valid, np.sum(_predict-_labels, axis=1) == 0))
-			score = np.vstack((score, _predicted)
+			score = np.vstack((score, _predicted))
 	print(preds.shape, valid.shape, score.shape)
 	np.save('_res_30_500epochs.npy', preds)
 	np.save('_valid_30_500epochs.npy', valid)
