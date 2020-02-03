@@ -127,12 +127,13 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 			valid = (np.sum(_predict-_labels) == 0)
 			score = np.mean(np.abs(_predict-_labels), axis=-1)
 		else:
-			preds = np.hstack((preds, _predict))
-			valid = np.hstack((valid, (np.sum(_predict-_labels) == 0)))
-			score = np.hstack((score, np.mean(np.abs(_predicted-_labels), axis=-1)))
+			preds = np.vstack((preds, _predict))
+			valid = np.hstack((valid, np.sum(_predict-_labels) == 0, axis=1))
+			score = np.vstack((score, np.mean(np.abs(_predicted-_labels), axis=-1)))
+	print(preds.shape, valid.shape, score.shape)
 	np.save('_res_30_500epochs.npy', preds)
-	np.save('{}_valid_30_500epochs.npy', valid)
-	np.save('{}_score_30_500epochs.npy', score)
+	np.save('_valid_30_500epochs.npy', valid)
+	np.save('_score_30_500epochs.npy', score)
 	print('acc:', np.mean(valid))
 
 def check_origin(imgs, label_path, path='cifar100_pyramid272_30outputs_500epochs.pth', nb_labels=100):
