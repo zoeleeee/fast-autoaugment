@@ -20,8 +20,8 @@ def label_permutation(labels, nb_labels, classifier_id):
     	labels[tmp==i] = permutated_vec[i]
     return labels
 
-def target_model(save_path):
-	model = get_model(C.get()['model'], num_class(C.get()['dataset'], 2))
+def target_model(save_path, nb_labels = 2):
+	model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels))
 	if save_path and os.path.exists(save_path):
 		data = torch.load(save_path)
 		if 'model' in data or 'state_dict' in data:
@@ -103,18 +103,49 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	print('acc:', np.mean(valids))
 	print('adversarial acc:', len(wr)/imgs.shape[0])
 
-def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth'):
-	model = target_model(path)
+def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500epochs.pth', nb_labels=100):
+	reps = np.load('2_label_permutation_cifar100.npy')[:100].T
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 	preds = []
 	valid = []
-	model = target_model(path)
+	model = target_model(path, nb_labels=nb_labels)
+	model.eval()
+	score = []
+	for images, label in loader:
+		outputs = model(images)
+		_, predicted = torch.sigmoid(outputs, 1)
+
+		_predicted = predicted.to('cpu').numpy()
+		_label = label.to('cpu').numpy()
+		_predicted = np.array([1 if v >= 0.5 else 0 for v in _predicted])
+		_labels = np.array([reps[i] for i in _label])
+		if len(preds) == 0:
+			preds = _predicted
+			valid = (np.sum(_predicted-_labels) == 0)
+			score = np.mean(np.abs(_predicted-_labels), axis=-1)
+		else:
+			preds = np.hstack((preds, _predicted))
+			valid = np.hstack((valid, (np.sum(_predicted-_labels) == 0)))
+			score = np.hstack((score, np.mean(np.abs(_predicted-_labels), axis=-1)))
+	np.save('_res_30_500epochs.npy', preds)
+	np.save('{}_valid_30_500epochs.npy', valid)
+	np.save('{}_score_30_500epochs.npy', score)
+	print('acc:', np.mean(valid))
+
+def check_origin(imgs, label_path, path='cifar100_pyramid272_30outputs_500epochs.pth', nb_labels=100):
+	labels = np.load(label_path)
+	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
+	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+	preds = []
+	valid = []
+	model = target_model(path, nb_labels=nb_labels)
 	model.eval()
 	for images, label in loader:
 		outputs = model(images)
 		_, predicted = torch.max(outputs, 1)
+		# _, predicted = torch.sigmoid(outputs, 1)
 
 		_predicted = predicted.to('cpu').numpy()
 		_label = label.to('cpu').numpy()
@@ -124,8 +155,8 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth'):
 		else:
 			preds = np.hstack((preds, _predicted))
 			valid = np.hstack((valid, (_predicted==_label)))
-	np.save('_100_classifier_preds_10000.npy', preds)
-	np.save('_100_classifier_valids_10000.npy', valid)
+	np.save('{}_100classifier_500epochs.npy'.format(label_path[:-4]), preds)
+	np.save('{}_100classifier_500epochs.npy'.format(label_path[:-4]), valid)
 	print('acc:', np.mean(valid))
 
 def get_normal_data():
@@ -153,7 +184,10 @@ if __name__ == '__main__':
 	nb_labels = sys.argv[-3]
 	if sys.argv[-1] == 'origin':
 		_ = C('confs/pyramid272_cifar100_2.yaml')
-		check_origin(imgs, label_path)
+		check_origin(imgs, label_path, nb_labels=nb_labels)
+	elif sys.argv[-1] == 'classifier':
+		_ = C('confs/pyramid272_cifar100_2.yaml')
+		check_classifier(imgs, label_path, nb_labels=nb_labels)
 	elif sys.argv[-1] == 'combined':
 		_ = C('confs/pyramid272_cifar100_2_tl.yaml')
 		check_combined(imgs, label_path, nb_labels, idx)
