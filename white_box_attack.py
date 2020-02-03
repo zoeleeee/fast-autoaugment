@@ -33,9 +33,9 @@ def target_model(save_path, nb_labels = 2):
 def predict(img, idxs, t=1):
 	preds = []
 	scores = []
-	labels = np.load('2_label_permutation.npy')[idxs].T
+	labels = np.load('2_label_permutation_cifar100.npy')[idxs].T
 	for i in idxs:
-		model = torch.load('mnist2/mnist2_{}.pth'.format(i)).eval()
+		model = target_model(entries[idxs[i]], nb_labels=nb_labels).eval()
 		output = F.softmax(model(torch.from_numpy(img.reshape(-1, 1, 28, 28))), dim=-1)
 		score, i = torch.max(output, 1)
 		preds.append(i.cpu().numpy()[0])
@@ -52,7 +52,7 @@ def predict(img, idxs, t=1):
 
 
 def find_closest(preds, idxs, label):
-	labels = np.load('2_label_permutation.npy')[idxs].T
+	labels = np.load('2_label_permutation_cifar100.npy')[idxs].T
 	dists = [np.sum(l-preds) if np.sum(l-label) > 0 else 1e10 for l in labels]
 	res = np.argmin(dists)
 	return res, labels[res]
@@ -140,7 +140,7 @@ def analysis():
 	label = int(file_name.split('_')[-2])
 
 	idxs = np.arange(500)
-	rep = np.load('2_label_permutation.npy')[idxs].T
+	rep = np.load('2_label_permutation_cifar100.npy')[idxs].T
 	loop_attack(img, rep[label], idxs, label, file_name=file_name)
 
 if __name__ == '__main__':
