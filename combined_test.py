@@ -121,6 +121,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 		_label = label.to('cpu').numpy()
 		_predict = np.array([[1 if u >= 0.5 else 0 for u in v] for v in _predicted])
 		_labels = np.array([reps[int(i)] for i in _label])
+		print(_predict.shape, _labels.shape)
 		if len(preds) == 0:
 			preds = _predict
 			valid = (np.sum(_predict-_labels) == 0)
