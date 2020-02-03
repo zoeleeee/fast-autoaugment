@@ -115,19 +115,19 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 	score = []
 	for images, label in loader:
 		outputs = model(images)
-		_, predicted = torch.sigmoid(outputs)
+		predicted = torch.sigmoid(outputs)
 
 		_predicted = predicted.to('cpu').numpy()
 		_label = label.to('cpu').numpy()
-		_predicted = np.array([1 if v >= 0.5 else 0 for v in _predicted])
+		_predict = np.array([1 if v >= 0.5 else 0 for v in _predicted])
 		_labels = np.array([reps[i] for i in _label])
 		if len(preds) == 0:
 			preds = _predicted
-			valid = (np.sum(_predicted-_labels) == 0)
-			score = np.mean(np.abs(_predicted-_labels), axis=-1)
+			valid = (np.sum(_predict-_labels) == 0)
+			score = np.mean(np.abs(_predict-_labels), axis=-1)
 		else:
-			preds = np.hstack((preds, _predicted))
-			valid = np.hstack((valid, (np.sum(_predicted-_labels) == 0)))
+			preds = np.hstack((preds, _predict))
+			valid = np.hstack((valid, (np.sum(_predict-_labels) == 0)))
 			score = np.hstack((score, np.mean(np.abs(_predicted-_labels), axis=-1)))
 	np.save('_res_30_500epochs.npy', preds)
 	np.save('{}_valid_30_500epochs.npy', valid)
