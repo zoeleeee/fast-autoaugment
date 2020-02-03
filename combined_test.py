@@ -120,7 +120,9 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 		_predicted = predicted.detach().cpu().numpy()
 		_label = label.to('cpu').numpy()
 		_predict = np.array([[1 if u >= 0.5 else 0 for u in v] for v in _predicted])
-		print(_label)
+		for i in _label[:5]:
+			print(i, type(i))
+			print(reps[i])
 		_labels = np.array([reps[i] for i in _label])
 		if len(preds) == 0:
 			preds = _predicted
