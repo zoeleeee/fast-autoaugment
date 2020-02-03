@@ -75,6 +75,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		del entries[-1]
 	
 	change_classifier = np.zeros(len(preds)).astype(np.bool)
+	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
 	# MainModel = imp.load_source('MainModel', 'mnist2/mnist2_450.py')
 	while(cnt < threshold):
 		if pred_label is not None:
@@ -91,8 +92,8 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		for i in np.arange(len(idxs)):
 			if preds[i] == aim[i]:
 				continue
-			model = target_model(entries[idxs[i]]).eval()		
-			fmodel = foolbox.models.PyTorchModel(model, bounds=(0, 1), num_classes=2)
+			model = target_model(entries[idxs[i]]).eval()
+			fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing)
 			if distance == 'l_inf':
 				attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
 				order = np.inf
