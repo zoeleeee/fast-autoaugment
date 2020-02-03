@@ -9,8 +9,6 @@ from foolbox.v1.attacks import ProjectedGradientDescentAttack, CarliniWagnerL2At
 from foolbox.distances import *
 from foolbox.criteria import TargetClass
 import copy
-from keras.datasets import mnist
-from mnist import get_data
 from keras import backend as K
 from numpy import linalg as LA
 import torch.nn.functional as F
