@@ -60,7 +60,7 @@ def num_class(dataset, nb_labels=100):
         'cifar10': 10,
         'reduced_cifar10': 10,
         'cifar10.1': 10,
-        'cifar100': 100,
+        'cifar100': int(nb_labels),
         'permutated_cifar100': int(nb_labels),
         'svhn': 10,
         'reduced_svhn': 10,
