@@ -117,7 +117,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 		outputs = model(images)
 		predicted = torch.sigmoid(outputs)
 
-		_predicted = predicted.to('cpu').numpy()
+		_predicted = predicted.detach().cpu().numpy()
 		_label = label.to('cpu').numpy()
 		_predict = np.array([1 if v >= 0.5 else 0 for v in _predicted])
 		_labels = np.array([reps[i] for i in _label])
