@@ -35,7 +35,7 @@ def predict(img, idxs, t=1):
 	scores = []
 	labels = np.load('2_label_permutation_cifar100.npy')[idxs].T
 	for i in idxs:
-		model = target_model(entries[idxs[i]], nb_labels=nb_labels).eval()
+		model = target_model(entries[idxs[i]]).eval()
 		output = F.softmax(model(torch.from_numpy(img.reshape(-1, 1, 28, 28))), dim=-1)
 		score, i = torch.max(output, 1)
 		preds.append(i.cpu().numpy()[0])
@@ -90,7 +90,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		for i in np.arange(len(idxs)):
 			if preds[i] == aim[i]:
 				continue
-			model = target_model(entries[idxs[i]], nb_labels=nb_labels).eval()		
+			model = target_model(entries[idxs[i]]).eval()		
 			fmodel = foolbox.models.PyTorchModel(model, bounds=(0, 1), num_classes=2)
 			if distance == 'l_inf':
 				attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
