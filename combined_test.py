@@ -115,7 +115,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 	score = []
 	for images, label in loader:
 		outputs = model(images)
-		_, predicted = torch.sigmoid(outputs, 1)
+		_, predicted = torch.sigmoid(outputs)
 
 		_predicted = predicted.to('cpu').numpy()
 		_label = label.to('cpu').numpy()
