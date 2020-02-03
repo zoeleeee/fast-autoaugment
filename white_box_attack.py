@@ -13,6 +13,7 @@ from keras import backend as K
 from numpy import linalg as LA
 import torch.nn.functional as F
 from theconf import Config as C, ConfigArgumentParser
+from FastAutoAugment.networks import get_model, num_class
 
 
 def epoch_attack(img, idxs):
