@@ -121,15 +121,15 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 		_label = label.to('cpu').numpy()
 		_predict = np.array([[1 if u >= 0.5 else 0 for u in v] for v in _predicted])
 		_labels = np.array([reps[int(i)] for i in _label])
-		print(_predict.shape, _labels.shape)
+		# print(_predict.shape, _labels.shape)
 		if len(preds) == 0:
 			preds = _predict
 			valid = (np.sum(_predict-_labels) == 0)
-			score = np.mean(np.abs(_predict-_labels), axis=-1)
+			score = _predicted
 		else:
 			preds = np.vstack((preds, _predict))
 			valid = np.hstack((valid, np.sum(_predict-_labels, axis=1) == 0))
-			score = np.hstack((score, -1*np.mean(np.abs(_predicted-_labels), axis=-1)))
+			score = np.vstack((score, _predicted)
 	print(preds.shape, valid.shape, score.shape)
 	np.save('_res_30_500epochs.npy', preds)
 	np.save('_valid_30_500epochs.npy', valid)
