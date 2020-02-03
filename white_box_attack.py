@@ -12,6 +12,7 @@ import copy
 from keras import backend as K
 from numpy import linalg as LA
 import torch.nn.functional as F
+from theconf import Config as C, ConfigArgumentParser
 
 
 def epoch_attack(img, idxs):
@@ -112,6 +113,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 
 
 def main():
+	_ = C('confs/pyramid272_cifar100_2_tl.yaml')
 	x_test = np.load('cifar100_advs_10000.npy')
 	img_rows, img_cols, nb_channels = 32, 32, 3
 	if K.image_data_format() != 'channels_first':
