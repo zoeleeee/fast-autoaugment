@@ -43,7 +43,7 @@ def predict(img, idxs, t=1):
 		del entries[-1]
 	for i in idxs:
 		model = target_model(entries[idxs[i]]).eval()
-		output = F.softmax(model(torch.from_numpy(img.reshape(-1, 1, 28, 28))), dim=-1)
+		output = F.softmax(model(torch.from_numpy(img.reshape(-1, 3, 32, 32))), dim=-1)
 		score, i = torch.max(output, 1)
 		preds.append(i.cpu().numpy()[0])
 		scores.append(score.detach().cpu().numpy())
