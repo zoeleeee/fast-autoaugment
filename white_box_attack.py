@@ -35,6 +35,12 @@ def predict(img, idxs, t=1):
 	preds = []
 	scores = []
 	labels = np.load('2_label_permutation_cifar100.npy')[idxs].T
+
+	model_dir = 'models'
+	files = os.listdir(model_dir)
+	entries = {int(file.split('_')[-5]) if len(file.split('_')) == 9 else -1 : os.path.join(model_dir, file)  for file in files}
+	if -1 in entries.keys():
+		del entries[-1]
 	for i in idxs:
 		model = target_model(entries[idxs[i]]).eval()
 		output = F.softmax(model(torch.from_numpy(img.reshape(-1, 1, 28, 28))), dim=-1)
