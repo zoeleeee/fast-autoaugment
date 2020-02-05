@@ -34,7 +34,7 @@ def predict(img, idxs, model, t=1):
 	scores = []
 	labels = np.load('2_label_permutation_cifar100.npy')[idxs].T
 
-	outputs = model(torch.Tensor(img))
+	outputs = model(torch.Tensor(img.reshape(-1, img.shape[0], img.shape[1], img.shape[2])))
 	score = torch.sigmoid(outputs).detach().cpu().numpy()
 	preds = np.array([[1 if u >= 0.5 else 0 for u in v] for v in score])
 	_pred = np.repeat(np.array(preds).reshape(1, -1), labels.shape[0], axis=0)
