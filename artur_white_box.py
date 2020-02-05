@@ -106,11 +106,11 @@ def main():
 	x_test = np.load('cifar100_advs_10000.npy')
 	img_rows, img_cols, nb_channels = 32, 32, 3
 	if K.image_data_format() != 'channels_first':
-	    x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
-	    input_shape = (1, img_rows, img_cols)
+	    x_test = x_test.reshape(x_test.shape[0], nb_channels, img_rows, img_cols)
+	    input_shape = (nb_channels, img_rows, img_cols)
 	else:
-	    x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
-	    input_shape = (img_rows, img_cols, 1)
+	    x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, nb_channels)
+	    input_shape = (img_rows, img_cols, nb_channels)
 	y_test = np.load('cifar100_labels_10000.npy')
 	# (x_train, x_test, y_train, y_test), _, _ = get_data()
 	# print('max:', np.max(x_test))
