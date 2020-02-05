@@ -86,7 +86,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		for i in np.arange(len(idxs)):
 			if preds[i] == aim[i]:
 				continue
-			adv = attack(adv, i)
+			adv = attack(adv, np.array([i]))
 			if type(adv) == type(None):
 				break
 			del model
