@@ -42,6 +42,7 @@ def predict(img, idxs, model, t=1):
 	if np.min(dists) > t:
 		return None, None, preds
 	pred_labels = np.arange(len(dists))[dists==np.min(dists)]
+	score = score.reshape(-1)
 	pred_scores = [np.sum([scores[i] if preds[i]==labels[v][i] else 1-scores[i] for i in np.arange(len(preds))]) for v in pred_labels]
 	pred_label = pred_labels[np.argmax(pred_scores)]
 	return pred_label, labels[pred_label], np.array(preds).reshape(-1)
