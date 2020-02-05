@@ -15,6 +15,8 @@ import torch.nn.functional as F
 from theconf import Config as C, ConfigArgumentParser
 from FastAutoAugment.networks import get_model, num_class
 
+
+
 def target_model(save_path, nb_labels = 30):
 	model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels))
 	if save_path and os.path.exists(save_path):
@@ -61,7 +63,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
 	model = target_model(file_name).eval()
-	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing)
+	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=30, preprocessing=preprocessing)
 	if distance == 'l_inf':
 		attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
 		order = np.inf
