@@ -10,6 +10,11 @@ from white_box_attack import predict
 import imp
 from theconf import Config as C, ConfigArgumentParser
 
+invTrans = torchvision.transforms.Compose([ torchvision.transforms.Normalize(mean = [ 0., 0., 0. ],
+                                                     std = [ 1/0.2023, 1/0.1994, 1/0.2010 ]),
+                                torchvision.transforms.Normalize(mean = [ -0.4914, -0.4822, -0.4465],
+                                                     std = [ 1., 1., 1. ]),
+                               ])
 
 
 def show_img():
@@ -48,11 +53,11 @@ def show_generated_imgs(file, order):
 	normal_label, _, normal_pred = predict(imgs[1], idxs)
 	adv_label, _, adv_pred = predict(imgs[0], idxs)
 	if adv_label != int(info[-3]):
-		print('error in your code')
+		print('error in your code:', str(adv_label), info[-3])
 		return
-	grid = torchvision.utils.make_grid([torch.Tensor(imgs[0]), torch.Tensor(imgs[1])], nrow=2)
+	grid = torchvision.utils.make_grid([invTrans(torch.Tensor(imgs[0])), invTrans(torch.Tensor(imgs[1]))], nrow=2)
 	plt.imshow(grid.numpy().transpose((1, 2, 0)))
-	if normal_label != int(info[3]):
+	if normal_label != int(info[-2]):
 		plt.title('[false positive]\nadv:{}_org_pred:{}_org:{}: {} distance:{}'.format(info[-3], normal_label, info[-2], order, info[-1][:-4]))
 		plt.savefig('whites/1_l_inf_imgs/wr/{}.png'.format(file.split('/')[-1][:-4]))
 	else:
