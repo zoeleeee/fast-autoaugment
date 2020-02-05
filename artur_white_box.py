@@ -59,7 +59,6 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 	t = 1
 	pred_label = org
 
-	MainModel = imp.load_source('MainModel', 'mnist2/mnist2_450.py')
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
 	model = target_model(file_name).eval()
 	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing)
@@ -94,10 +93,10 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		if type(adv) == type(None):
 			break
 		else:
-			np.save('whites/1_analysis/{}_{}_{}_{}.npy'.format(file_name.split('/')[-1][:-4], cnt, res, org), adv)
+			np.save('whites/artur_1_analysis/{}_{}_{}_{}.npy'.format(file_name.split('/')[-1][:-4], cnt, res, org), adv)
 		pred_label, pred_rep, preds = predict(adv, idxs, model)
 	if type(adv)!= type(None) and cnt < threshold:
-		np.save('whites/{}_{}/adv_{}_{}_{}_{}.npy'.format(t, distance, cnt, pred_label, org, LA.norm((img-adv).reshape(-1), order)), [adv, img])
+		np.save('whites/artur_{}_{}/adv_{}_{}_{}_{}.npy'.format(t, distance, cnt, pred_label, org, LA.norm((img-adv).reshape(-1), order)), [adv, img])
 	print(cnt, (LA.norm((img-adv).reshape(-1), order) if type(adv) != type(None) else 'None'))
 
 
