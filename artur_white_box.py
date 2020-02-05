@@ -93,7 +93,6 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 			adv = attack(adv, i)
 			if type(adv) == type(None):
 				break
-			del model
 		if type(adv) == type(None):
 			break
 		else:
