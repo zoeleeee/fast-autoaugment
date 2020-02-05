@@ -103,19 +103,19 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 
 def main():
 	_ = C('confs/pyramid272_cifar100_2.yaml')
-	x_test = np.load('tests.npy')
-	img_rows, img_cols = 28, 28
+	x_test = np.load('cifar100_advs_10000.npy')
+	img_rows, img_cols, nb_channels = 32, 32, 3
 	if K.image_data_format() != 'channels_first':
 	    x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
 	    input_shape = (1, img_rows, img_cols)
 	else:
 	    x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
 	    input_shape = (img_rows, img_cols, 1)
-	y_test = np.load('labels.npy')
+	y_test = np.load('cifar100_labels_10000.npy')
 	# (x_train, x_test, y_train, y_test), _, _ = get_data()
 	# print('max:', np.max(x_test))
 	idxs = np.arange(30)
-	labels = np.load('2_label_permutation.npy')[idxs].T
+	labels = np.load('2_label_permutation_cifar100.npy')[idxs].T
 	print(labels.shape)
 	nb = 0
 	for img, i in zip(x_test, y_test):
