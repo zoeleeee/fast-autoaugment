@@ -30,19 +30,16 @@ def target_model(save_path, nb_labels = 30):
 	return model
 
 def predict(img, idxs, model, t=1):
-	preds = []
-	scores = []
 	labels = np.load('2_label_permutation_cifar100.npy')[idxs].T
-
 	outputs = model(torch.Tensor(img.reshape(-1, img.shape[0], img.shape[1], img.shape[2])))
-	score = torch.sigmoid(outputs).detach().cpu().numpy()
-	preds = np.array([[1 if u >= 0.5 else 0 for u in v] for v in score])
+	scores = torch.sigmoid(outputs).detach().cpu().numpy()
+	preds = np.array([[1 if u >= 0.5 else 0 for u in v] for v in scores])
 	_pred = np.repeat(np.array(preds).reshape(1, -1), labels.shape[0], axis=0)
 	dists = np.sum(np.absolute(_pred - labels), axis=1)
 	if np.min(dists) > t:
 		return None, None, preds
 	pred_labels = np.arange(len(dists))[dists==np.min(dists)]
-	score = score.reshape(-1)
+	scores = scores.reshape(-1)
 	pred_scores = [np.sum([scores[i] if preds[i]==labels[v][i] else 1-scores[i] for i in np.arange(len(preds))]) for v in pred_labels]
 	pred_label = pred_labels[np.argmax(pred_scores)]
 	return pred_label, labels[pred_label], np.array(preds).reshape(-1)
