@@ -8,6 +8,8 @@ import torchvision
 import torch
 from white_box_attack import predict
 import imp
+from theconf import Config as C, ConfigArgumentParser
+
 
 
 def show_img():
@@ -58,6 +60,7 @@ def show_generated_imgs(file, order):
 		plt.savefig('whites/1_l_inf_imgs/advs/{}.png'.format(file.split('/')[-1][:-4]))
 
 def main(path):
+	_ = C('confs/pyramid272_cifar100_2_tl.yaml')
 	files = os.listdir(path)
 	for file in files:
 		show_generated_imgs(os.path.join(path, file), np.inf)
