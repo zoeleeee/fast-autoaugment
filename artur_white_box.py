@@ -25,9 +25,7 @@ class NET(nn.Module):
 	def forward(self, x):
 		x = self.model(x)
 		x = F.sigmoid(x)
-		x = torch.squeeze(x, dim=0)
-		print(x.size())
-		return torch.Tensor([1-x[self.dim], x[self.dim]])
+		return torch.Tensor([1-x[0][self.dim], x[0][self.dim]])
 
 
 def target_model(save_path, nb_labels = 30):
