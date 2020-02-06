@@ -88,7 +88,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		change_classifier = tmp
 		for i in np.arange(len(idxs)):
 			net = NET(model, i).eval()
-			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=30, preprocessing=preprocessing)
+			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing)
 			if distance == 'l_inf':
 				attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
 				order = np.inf
