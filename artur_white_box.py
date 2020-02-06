@@ -100,7 +100,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 			elif distance == 'l_2':
 				attack = CarliniWagnerL2Attack(fmodel, distance=MeanSquaredDistance)
 				order = 2			
-			adv = attack(adv.cuda(), preds[i].cuda())
+			adv = attack(adv, preds[i])
 			if type(adv) == type(None):
 				break
 		if type(adv) == type(None):
