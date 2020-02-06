@@ -70,7 +70,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 	pred_label = org
 
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
-	model = target_model(file_name)
+	model = target_model(file_name).eval()
 	
 	change_classifier = np.zeros(len(preds)).astype(np.bool)
 
@@ -85,6 +85,11 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		print('{}#classifier:{}, \nadded classifier:{}'.format(cnt, np.arange(len(preds))[tmp], np.arange(len(preds))[np.array([change_classifier[i]^tmp[i] if change_classifier[i]==False else False for i in np.arange(len(preds))])]))
 		change_classifier = tmp
 		for i in np.arange(len(idxs)):
+			if preds[i] == aim[i]:
+				continue
+			if preds[i] == 0:
+				continue
+
 			net = NET(model, i).eval()
 			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing)
 			if distance == 'l_inf':
@@ -92,12 +97,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 				order = np.inf
 			elif distance == 'l_2':
 				attack = CarliniWagnerL2Attack(fmodel, distance=MeanSquaredDistance)
-				order = 2
-
-			if preds[i] == aim[i]:
-				continue
-			if preds[i] == 0:
-				continue
+				order = 2			
 			adv = attack(adv, preds[i])
 			if type(adv) == type(None):
 				break
