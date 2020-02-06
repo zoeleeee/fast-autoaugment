@@ -25,6 +25,8 @@ class NET(nn.Module):
 	def forward(self, x):
 		x = self.model(x)
 		x = F.sigmoid(x)
+		x = torch.squeeze(x, dim=0)
+		print(x.size())
 		return torch.Tensor([1-x[self.dim], x[self.dim]])
 
 
