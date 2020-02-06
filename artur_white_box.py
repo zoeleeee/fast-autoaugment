@@ -71,13 +71,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
 	model = target_model(file_name)
-	if distance == 'l_inf':
-		attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
-		order = np.inf
-	elif distance == 'l_2':
-		attack = CarliniWagnerL2Attack(fmodel, distance=MeanSquaredDistance)
-		order = 2
-
+	
 	change_classifier = np.zeros(len(preds)).astype(np.bool)
 
 	while(cnt < threshold):
@@ -93,6 +87,13 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		for i in np.arange(len(idxs)):
 			net = NET(model, i).eval()
 			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=30, preprocessing=preprocessing)
+			if distance == 'l_inf':
+				attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
+				order = np.inf
+			elif distance == 'l_2':
+				attack = CarliniWagnerL2Attack(fmodel, distance=MeanSquaredDistance)
+				order = 2
+
 			if preds[i] == aim[i]:
 				continue
 			if preds[i] == 0:
