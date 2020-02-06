@@ -17,7 +17,7 @@ from FastAutoAugment.networks import get_model, num_class
 import torch.nn as nn
 
 class NET(nn.Module):
-	def __init__(self, model):
+	def __init__(self, model, dim):
 		super(NET, self).__init__()
 		self.model = model
 		self.dim = dim
@@ -88,11 +88,11 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		res, aim  = find_closest(preds, idxs, label)
 		print('{}# aim:{}_{}'.format(cnt, res, np.sum(np.absolute(aim-preds))))
 		tmp = preds != aim
-		net = NET(model).eval()
-		fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=30, preprocessing=preprocessing)
 		print('{}#classifier:{}, \nadded classifier:{}'.format(cnt, np.arange(len(preds))[tmp], np.arange(len(preds))[np.array([change_classifier[i]^tmp[i] if change_classifier[i]==False else False for i in np.arange(len(preds))])]))
 		change_classifier = tmp
 		for i in np.arange(len(idxs)):
+			net = NET(model, i).eval()
+			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=30, preprocessing=preprocessing)
 			if preds[i] == aim[i]:
 				continue
 			if preds[i] == 0:
