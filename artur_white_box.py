@@ -64,7 +64,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 	preds = copy.deepcopy(label)
 	res, aim = find_closest(preds, idxs, label)
 	cnt = 0
-	adv = copy.deepcopy(img)
+	adv = torch.Tensor(copy.deepcopy(img)).cuda().cpu().numpy()
 	print(adv.shape)
 	t = 1
 	pred_label = org
@@ -99,7 +99,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 				order = np.inf
 			elif distance == 'l_2':
 				attack = CarliniWagnerL2Attack(fmodel, distance=MeanSquaredDistance)
-				order = 2			
+				order = 2		
 			adv = attack(adv, preds[i])
 			if type(adv) == type(None):
 				break
