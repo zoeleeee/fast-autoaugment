@@ -69,8 +69,10 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 	t = 1
 	pred_label = org
 
+	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
-	model = target_model(file_name).eval()
+	model = target_model(file_name).to(device).eval()
 	
 	change_classifier = np.zeros(len(preds)).astype(np.bool)
 
@@ -90,7 +92,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 			if preds[i] == 0:
 				continue
 
-			net = NET(model, i).eval()
+			net = NET(model, i).to(device).eval()
 			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing)
 			if distance == 'l_inf':
 				attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
