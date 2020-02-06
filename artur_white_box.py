@@ -14,7 +14,18 @@ from numpy import linalg as LA
 import torch.nn.functional as F
 from theconf import Config as C, ConfigArgumentParser
 from FastAutoAugment.networks import get_model, num_class
+import torch.nn as nn
 
+class NET(nn.Module):
+	def __init__(self, model):
+		super(NET, self).__init__()
+		self.model = model
+		self.dim = dim
+
+	def forward(self, x):
+		x = self.model(x)
+		x = F.sigmoid(x)
+		return torch.Tensor([1-x[self.dim], x[self.dim]])
 
 
 def target_model(save_path, nb_labels = 30):
@@ -59,8 +70,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 	pred_label = org
 
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
-	model = target_model(file_name).eval()
-	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=30, preprocessing=preprocessing)
+	model = target_model(file_name)
 	if distance == 'l_inf':
 		attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
 		order = np.inf
@@ -78,8 +88,8 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		res, aim  = find_closest(preds, idxs, label)
 		print('{}# aim:{}_{}'.format(cnt, res, np.sum(np.absolute(aim-preds))))
 		tmp = preds != aim
-		# print(change_classifier)
-		# print(tmp)
+		net = NET(model).eval()
+		fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=30, preprocessing=preprocessing)
 		print('{}#classifier:{}, \nadded classifier:{}'.format(cnt, np.arange(len(preds))[tmp], np.arange(len(preds))[np.array([change_classifier[i]^tmp[i] if change_classifier[i]==False else False for i in np.arange(len(preds))])]))
 		change_classifier = tmp
 		for i in np.arange(len(idxs)):
@@ -87,7 +97,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 				continue
 			if preds[i] == 0:
 				continue
-			adv = attack(adv, i)
+			adv = attack(adv, preds[i])
 			if type(adv) == type(None):
 				break
 		if type(adv) == type(None):
