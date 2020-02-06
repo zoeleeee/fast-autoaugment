@@ -24,7 +24,7 @@ class NET(nn.Module):
 
 	def forward(self, x):
 		x = self.model(x)
-		x = F.sigmoid(x)
+		x = torch.sigmoid(x)
 		return torch.Tensor([[1-x[0][self.dim], x[0][self.dim]]])
 
 
@@ -93,14 +93,14 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 				continue
 
 			net = NET(model, i).to(device).eval()
-			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing)
+			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing).to(device)
 			if distance == 'l_inf':
 				attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
 				order = np.inf
 			elif distance == 'l_2':
 				attack = CarliniWagnerL2Attack(fmodel, distance=MeanSquaredDistance)
 				order = 2			
-			adv = attack(adv, preds[i])
+			adv = attack(adv.cuda(), preds[i].cuda())
 			if type(adv) == type(None):
 				break
 		if type(adv) == type(None):
