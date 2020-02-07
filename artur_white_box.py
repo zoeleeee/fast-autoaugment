@@ -23,6 +23,8 @@ class NET(nn.Module):
 		self.fc = torch.zeros(output, 2)
 		self.fc[dim][0], self.fc[dim][1] = -1, 1
 		self.bias = torch.Tensor([[1, 0]])
+		self.fc = self.fc.cuda()
+		self.bias = self.bias.cuda()
 
 	def forward(self, x):
 		x = self.model(x)
