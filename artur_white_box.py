@@ -23,12 +23,9 @@ class NET(nn.Module):
 		self.dim = dim
 
 	def forward(self, x):
-		print(x.device)
 		x = self.model(x)
 		x = torch.sigmoid(x)
-		res = torch.Tensor([[1-x[0][self.dim], x[0][self.dim]]])
-		print(res.device)
-		print(self.model.device)
+		res = torch.Tensor([[1-x[0][self.dim], x[0][self.dim]]]).cuda()
 		return res
 
 
