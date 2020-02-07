@@ -62,7 +62,11 @@ def find_closest(preds, idxs, label):
 	return res, labels[res]
 
 def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_name='cifar100_pyramid272_30outputs_500epochs.pth'):
-	
+	# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
+	model = target_model(file_name)
+	pred_label, pred_rep, preds = predict(img, idxs, model)
+
 	if np.sum(preds.reshape(-1)-label) != 0:
 		return
 	res, aim = find_closest(preds, idxs, label)
@@ -72,11 +76,6 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 	t = 1
 	pred_label = org
 
-	# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
-	model = target_model(file_name)
-	pred_label, pred_rep, preds = predict(img, idxs, model)
 	change_classifier = np.zeros(len(preds)).astype(np.bool)
 
 	while(cnt < threshold):
