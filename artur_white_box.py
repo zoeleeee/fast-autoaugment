@@ -41,6 +41,7 @@ def target_model(save_path, nb_labels = 30):
 	return model
 
 def predict(img, idxs, model, t=1):
+	model.eval()
 	labels = np.load('2_label_permutation_cifar100.npy')[idxs].T
 	outputs = model(torch.Tensor(img.reshape(-1, img.shape[0], img.shape[1], img.shape[2])))
 	scores = torch.sigmoid(outputs).detach().cpu().numpy().reshape(-1)
@@ -61,7 +62,7 @@ def find_closest(preds, idxs, label):
 	return res, labels[res]
 
 def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_name='cifar100_pyramid272_30outputs_500epochs.pth'):
-	pred_label, pred_rep, preds = predict(adv, idxs, model)
+	
 	if np.sum(preds.reshape(-1)-label) != 0:
 		return
 	res, aim = find_closest(preds, idxs, label)
@@ -75,7 +76,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
 	model = target_model(file_name)
-	
+	pred_label, pred_rep, preds = predict(img, idxs, model)
 	change_classifier = np.zeros(len(preds)).astype(np.bool)
 
 	while(cnt < threshold):
