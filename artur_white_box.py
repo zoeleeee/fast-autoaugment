@@ -98,7 +98,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 			if preds[i] == 0:
 				continue
 
-			net = NET(model, i).eval()
+			net = NET(model, len(idxs), i).eval()
 			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing)
 			if distance == 'l_inf':
 				attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
