@@ -61,7 +61,9 @@ def find_closest(preds, idxs, label):
 	return res, labels[res]
 
 def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_name='cifar100_pyramid272_30outputs_500epochs.pth'):
-	preds = copy.deepcopy(label)
+	pred_label, pred_rep, preds = predict(adv, idxs, model)
+	if np.sum(preds.reshape(-1)-label) != 0:
+		return
 	res, aim = find_closest(preds, idxs, label)
 	cnt = 0
 	adv = copy.deepcopy(img)
@@ -72,7 +74,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 	# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
-	model = target_model(file_name).eval()
+	model = target_model(file_name)
 	
 	change_classifier = np.zeros(len(preds)).astype(np.bool)
 
@@ -87,12 +89,13 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 		print('{}#classifier:{}, \nadded classifier:{}'.format(cnt, np.arange(len(preds))[tmp], np.arange(len(preds))[np.array([change_classifier[i]^tmp[i] if change_classifier[i]==False else False for i in np.arange(len(preds))])]))
 		change_classifier = tmp
 		for i in np.arange(len(idxs)):
+			print(cnt,i)
 			if preds[i] == aim[i]:
 				continue
 			if preds[i] == 0:
 				continue
 
-			net = NET(model, i).eval()
+			net = NET(model, i)
 			fmodel = foolbox.models.PyTorchModel(net, bounds=(-3, 3), num_classes=2, preprocessing=preprocessing)
 			if distance == 'l_inf':
 				attack = ProjectedGradientDescentAttack(fmodel, distance=Linfinity)
