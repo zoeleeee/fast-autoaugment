@@ -17,16 +17,18 @@ from FastAutoAugment.networks import get_model, num_class
 import torch.nn as nn
 
 class NET(nn.Module):
-	def __init__(self, model, dim):
+	def __init__(self, model, output, dim):
 		super(NET, self).__init__()
 		self.model = model
-		self.dim = dim
+		self.fc = torch.zeros(output, 2)
+		self.fc[dim][0], self.fc[dim][1] = -1, 1
+		self.bias = torch.Tensor([[1, 0]])
 
 	def forward(self, x):
 		x = self.model(x)
 		x = torch.sigmoid(x)
-		res = torch.Tensor([[1-x[0][self.dim], x[0][self.dim]]]).cuda()
-		return res
+		x = torch.matmul(x, self.fc) + self.bias
+		return x
 
 
 def target_model(save_path, nb_labels = 30):
