@@ -12,7 +12,9 @@ from torch.utils.data import Dataset, DataLoader
 import onnx
 from onnx_tf.backend import prepare
 import tensorflow as tf
+from theconf import Config as C
 
+_ = C('confs/pyramid272_cifar100_2_tl.yaml')
 idx=10000
 model = target_model('cifar100_pyramid272_30outputs_500epochs.pth', 30)
 imgs = np.load('cifar100_advs_{}.npy'.format(idx))
