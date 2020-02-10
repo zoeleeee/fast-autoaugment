@@ -19,7 +19,7 @@ idx=10000
 model = target_model('cifar100_pyramid272_30outputs_500epochs.pth', 30)
 imgs = np.load('cifar100_advs_{}.npy'.format(idx))
 label_path = 'cifar100_labels_{}.npy'.format(idx)
-dummy_input = torch.from_numpy(imgs[0])
+dummy_input = torch.from_numpy(np.array([imgs[0]]))
 dummy_output = model(dummy_input)
 print(dummy_output)
 
