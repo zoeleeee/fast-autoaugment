@@ -77,7 +77,7 @@ def loop_attack(img, label, idxs, org, distance='l_inf', threshold=10000, file_n
 	res, aim = find_closest(preds, idxs, label)
 	cnt = 0
 	adv = copy.deepcopy(img)
-	print(adv.shape)
+	# print(adv.shape)
 	t = 1
 	pred_label = org
 
@@ -143,6 +143,7 @@ def main():
 		print(nb, labels[i])
 		nb += 1
 		loop_attack(img, labels[i], idxs, i, distance='l_inf')
+		return
 
 if __name__ == '__main__':
 	main()
