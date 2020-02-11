@@ -20,8 +20,8 @@ def label_permutation(labels, nb_labels, classifier_id):
     	labels[tmp==i] = permutated_vec[i]
     return labels
 
-def target_model(save_path, nb_labels = 2, device='cpu'):
-	model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels)).to(device)
+def target_model(save_path, nb_labels = 2):
+	model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels))
 	if save_path and os.path.exists(save_path):
 		data = torch.load(save_path)
 		if 'model' in data or 'state_dict' in data:
