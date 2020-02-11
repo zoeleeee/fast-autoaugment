@@ -189,7 +189,7 @@ if __name__ == '__main__':
 		check_origin(imgs, label_path, nb_labels=int(nb_labels))
 	elif sys.argv[-1] == 'classifier':
 		_ = C('confs/pyramid272_cifar100_2.yaml')
-		check_classifier(imgs, label_path, nb_labels=int(nb_labels))
+		check_classifier(imgs, label_path, path=sys.argv[-4], nb_labels=int(nb_labels))
 	elif sys.argv[-1] == 'combined':
 		_ = C('confs/pyramid272_cifar100_2_tl.yaml')
 		check_combined(imgs, label_path, nb_labels, idx)
