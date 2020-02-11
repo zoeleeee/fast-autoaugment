@@ -61,15 +61,16 @@ def non_labels_analysis():
 def predict_hamming(nb_res, t):
 	_beg = 0
 	_end = 30
+	idxs = np.hstack((np.arange(10), np.arange(20,30))).reshape(-1)
 	labels = np.load('cifar100_labels_{}.npy'.format(10000))
 	if not os.path.exists('_models/hamming_labels_{}.npy'.format(nb_res)):
-		rep = np.load('2_label_permutation_cifar100.npy')[_beg:_end].T
-		samples = np.load('_res_30_{}.npy'.format(nb_res)).T[_beg:_end].T
+		rep = np.load('2_label_permutation_cifar100.npy')[idxs].T
+		samples = np.load('_res_30_{}.npy'.format(nb_res)).T[idxs].T
 		print(samples.shape)
 		
 		# orders = np.random.permutation(samples.shape[1])
 		# _rep = np.array([rep[j] for j in len(rep)]).T
-		scores = np.load('_score_30_{}.npy'.format(nb_res))[_beg:_end].T #[10000, 30]
+		scores = np.load('_score_30_{}.npy'.format(nb_res))[idxs].T #[10000, 30]
 		print(scores.shape)
 		preds = []
 		preds_dist = []
