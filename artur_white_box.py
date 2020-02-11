@@ -142,7 +142,7 @@ def main():
 	for img, i in zip(x_test, y_test):
 		print(nb, labels[i])
 		nb += 1
-		loop_attack(img, labels[i], idxs, i, distance='l_inf')
+		loop_attack(img, labels[i], idxs, i, distance='l_inf', threshold=10)
 		return
 
 if __name__ == '__main__':
