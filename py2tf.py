@@ -24,7 +24,7 @@ dummy_input = torch.from_numpy(np.array([imgs[0]]))
 dummy_output = model(dummy_input)
 print(dummy_output)
 
-torch.onnx.export(model, dummy_input, 'cifar100.onnx', input_names=['input'], output_names=['output'])
+torch.onnx.export(model.module, dummy_input, 'cifar100.onnx', input_names=['input'], output_names=['output'])
 
 model_onnx = onnx.load('cifar100.onnx')
 tf_rep = prepare(model_onnx)
