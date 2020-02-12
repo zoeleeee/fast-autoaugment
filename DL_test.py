@@ -1,0 +1,323 @@
+
+# coding: utf-8
+
+# In[1]:
+
+
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+#os.environ["CUDA_LAUNCH_BLOCKING"]="1"
+import itertools
+import json
+import logging
+import math
+import time
+from collections import OrderedDict
+
+
+import torch
+from torch import nn, optim
+from torch.nn.parallel.data_parallel import DataParallel
+
+import torchvision
+
+from tqdm import tqdm
+from theconf import Config as C, ConfigArgumentParser
+
+from FastAutoAugment.common import get_logger
+from FastAutoAugment.data import get_dataloaders
+from FastAutoAugment.lr_scheduler import adjust_learning_rate_resnet
+from FastAutoAugment.metrics import accuracy, Accumulator 
+from FastAutoAugment.networks import get_model, num_class
+from warmup_scheduler import GradualWarmupScheduler
+import numpy as np
+
+_ = C('./confs/pyramid272_cifar100_2_tl.yaml')
+logger = get_logger('Fast AutoAugment')
+logger.setLevel(logging.INFO)
+
+
+# In[2]:
+
+
+def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, writer=None, verbose=1,
+              scheduler=None, nb_labels=1e6):
+    tqdm_disable = bool(os.environ.get('TASK_NAME', ''))    # KakaoBrain Environment
+    if verbose:
+        loader = tqdm(loader, disable=tqdm_disable)
+        loader.set_description('[%s %04d/%04d]' % (desc_default, epoch, C.get()['epoch']))
+
+    metrics = Accumulator()
+    cnt = 0
+    total_steps = len(loader)
+    steps = 0
+    for data, label in loader:
+        steps += 1
+        # print(torch.max(data).item(), torch.min(data).item())
+        data, label = data.cuda(), label.cuda()
+
+        preds = model(data)
+        preds = torch.sigmoid(preds) 
+        loss = loss_fn(preds, label.to(torch.float))#
+        
+        if optimizer:
+            optimizer.zero_grad()
+            loss.backward()
+#             if getattr(optimizer, "synchronize", None):
+#                 optimizer.synchronize()     # for horovod
+            if C.get()['optimizer'].get('clip', 5) > 0:
+                nn.utils.clip_grad_norm_(model.parameters(), C.get()['optimizer'].get('clip', 5))
+            optimizer.step()
+
+        top1 = 0 
+        top5 = 0
+        for i in range(preds.shape[1]):
+            t1, t5 = accuracy(preds[:,[i]], label[:,i], (1, 1))
+            top1+=t1
+            top5+=t5 
+        top1 /= (preds.shape[1])
+        top5 /= (preds.shape[1])
+        
+        metrics.add_dict({
+            'loss': loss.item() * len(data),
+            'top1': top1.item() * len(data),
+            'top5': top5.item() * len(data),
+        })
+        cnt += len(data)
+        if verbose:
+            postfix = metrics / cnt
+            if optimizer:
+                postfix['lr'] = optimizer.param_groups[0]['lr']
+            loader.set_postfix(postfix)
+
+        if scheduler is not None:
+            scheduler.step(epoch - 1 + float(steps) / total_steps)
+
+        del preds, loss, top1, top5, data, label
+
+    if tqdm_disable:
+        if optimizer:
+            logger.info('[%s %03d/%03d] %s lr=%.6f', desc_default, epoch, C.get()['epoch'], metrics / cnt,
+                        optimizer.param_groups[0]['lr'])
+        else:
+            logger.info('[%s %03d/%03d] %s', desc_default, epoch, C.get()['epoch'], metrics / cnt)
+
+    metrics /= cnt
+    if optimizer:
+        metrics.metrics['lr'] = optimizer.param_groups[0]['lr']
+    if verbose:
+        for key, value in metrics.items():
+            writer.add_scalar(key, value, epoch)
+    return metrics
+
+
+def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metric='last', save_path=None,
+                   only_eval=False, horovod=False, permutated_vec=None, nb_labels=None, classifier_id=None):
+
+    if not reporter:
+        reporter = lambda **kwargs: 0
+
+    max_epoch = C.get()['epoch']
+    trainsampler, trainloader, validloader, testloader_ = get_dataloaders(C.get()['dataset'], C.get()['batch'], dataroot,
+                                                                          test_ratio, split_idx=cv_fold, horovod=horovod,
+                                                                          permutated_vec=permutated_vec)
+    
+
+    model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels), data_parallel=(not horovod))
+    
+    
+    is_master = True
+    criterion = nn.BCELoss()
+
+    
+    if not tag or not is_master:
+        from FastAutoAugment.metrics import SummaryWriterDummy as SummaryWriter
+        logger.warning('tag not provided, no tensorboard log.')
+    else:
+        from tensorboardX import SummaryWriter
+    writers = [SummaryWriter(log_dir='./logs/%s/%s' % (tag, x)) for x in ['train', 'valid', 'test']]
+
+    result = OrderedDict()
+    epoch_start = 1
+    if save_path and os.path.exists(save_path):
+        logger.info('%s file found. loading...' % save_path)
+        data = torch.load(save_path)
+        if 'model' in data or 'state_dict' in data:
+            key = 'model' if 'model' in data else 'state_dict'
+            logger.info('checkpoint epoch@%d' % data['epoch'])
+            if not isinstance(model, DataParallel):
+                # only for Pyramid cifar100
+                weights = {k.replace('module.', ''): v for k, v in data[key].items()}
+                
+                #weights['fc.weight'] = torch.rand_like(model.state_dict()['fc.weight'])
+                #weights['fc.bias'] = torch.rand_like(model.state_dict()['fc.bias'])
+                model.load_state_dict(weights)
+            else:
+                weights = {k if 'module.' in k else 'module.'+k: v for k, v in data[key].items()}
+                
+                #weights['module.fc.weight'] = torch.rand_like(model.state_dict()['module.fc.weight'])
+                #weights['module.fc.bias'] = torch.rand_like(model.state_dict()['module.fc.bias'])
+                model.load_state_dict(weights)
+            
+            if data['epoch'] < C.get()['epoch']:
+                #epoch_start = data['epoch']
+                pass
+            else:
+                pass
+                #only_eval = True            
+                #model.load_state_dict({k: v for k, v in data.items()})
+                #model.eval()
+            
+        else:
+            print('stop and check the pth file')
+            return
+        
+        del data
+        
+
+#     else:
+#         logger.info('"%s" file not found. skip to pretrain weights...' % save_path)
+#         if only_eval:
+#             logger.warning('model checkpoint not found. only-evaluation mode is off.')
+#         only_eval = False
+
+#     if C.get()['optimizer']['type'] == 'sgd':
+#         optimizer = optim.SGD(
+#             model.parameters(),
+#             lr=C.get()['lr'],
+#             momentum=C.get()['optimizer'].get('momentum', 0.9),
+#             weight_decay=C.get()['optimizer']['decay'],
+#             nesterov=C.get()['optimizer']['nesterov']
+#         )
+#     else:
+#         raise ValueError('invalid optimizer type=%s' % C.get()['optimizer']['type'])
+    
+    optimizer = optim.AdamW(model.parameters(),lr=1e-3,amsgrad=True)
+        
+        
+        
+        
+    lr_scheduler_type = C.get()['lr_schedule'].get('type', 'cosine')
+    if lr_scheduler_type == 'cosine':
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=C.get()['epoch'], eta_min=0.)
+    elif lr_scheduler_type == 'resnet':
+        scheduler = adjust_learning_rate_resnet(optimizer)
+    else:
+        raise ValueError('invalid lr_schduler=%s' % lr_scheduler_type)
+
+    if C.get()['lr_schedule'].get('warmup', None):
+        scheduler = GradualWarmupScheduler(
+            optimizer,
+            multiplier=C.get()['lr_schedule']['warmup']['multiplier'],
+            total_epoch=C.get()['lr_schedule']['warmup']['epoch'],
+            after_scheduler=scheduler
+        )   
+    
+    
+#     if only_eval == True:
+#         logger.info('evaluation only+')
+#         model.eval()
+#         rs = dict()
+#         rs['train'] = run_epoch(model, trainloader, criterion, None, desc_default='train', epoch=0,
+#                                 writer=writers[0], nb_labels=nb_labels)
+#         rs['valid'] = run_epoch(model, validloader, criterion, None, desc_default='valid', epoch=0,
+#                                 writer=writers[1], nb_labels=nb_labels)
+#         rs['test'] = run_epoch(model, testloader_, criterion, None, desc_default='*test', epoch=0,
+#                                writer=writers[2], nb_labels=nb_labels)
+#         for key, setname in itertools.product(['loss', 'top1', 'top5'], ['train', 'valid', 'test']):
+#             if setname not in rs:
+#                 continue
+#             result['%s_%s' % (key, setname)] = rs[setname][key]
+#         result['epoch'] = 0
+#         return result
+
+    # train loop
+    best_top1 = 0
+    for epoch in range(epoch_start, max_epoch + 1):
+#         if horovod:
+#             trainsampler.set_epoch(epoch)
+
+        model.train()
+        rs = dict()
+        rs['train'] = run_epoch(model, trainloader, criterion, optimizer, desc_default='train', epoch=epoch,
+                                writer=writers[0], verbose=is_master, scheduler=scheduler, nb_labels=nb_labels)
+        model.eval()
+
+        if math.isnan(rs['train']['loss']):
+            raise Exception('train loss is NaN.')
+
+        if epoch % 5 == 0 or epoch == max_epoch:
+            rs['valid'] = run_epoch(model, validloader, criterion, None, desc_default='valid', epoch=epoch,
+                                    writer=writers[1], verbose=is_master, nb_labels=nb_labels)
+            rs['test'] = run_epoch(model, testloader_, criterion, None, desc_default='*test', epoch=epoch,
+                                   writer=writers[2], verbose=is_master, nb_labels=nb_labels)
+
+            if metric == 'last' or rs[metric]['top1'] >= best_top1:
+                if metric != 'last':
+                    best_top1 = rs[metric]['top1']
+                for key, setname in itertools.product(['loss', 'top1', 'top5'], ['train', 'valid', 'test']):
+                    result['%s_%s' % (key, setname)] = rs[setname][key]
+                result['epoch'] = epoch
+
+                writers[1].add_scalar('valid_top1/best', rs['valid']['top1'], epoch)
+                writers[2].add_scalar('test_top1/best', rs['test']['top1'], epoch)
+
+                reporter(
+                    loss_valid=rs['valid']['loss'], top1_valid=rs['valid']['top1'],
+                    loss_test=rs['test']['loss'], top1_test=rs['test']['top1']
+                )
+
+            torch.save({
+                'epoch': epoch,
+                'log': {
+                    'train': rs['train'].get_dict(),
+                    'valid': rs['valid'].get_dict(),
+                    'test': rs['test'].get_dict(),
+                },
+                'optimizer': optimizer.state_dict(),
+                'model': model.state_dict()
+            }, save_path.replace('.pth', '_{}_{}_top1_{:.3f}_{:.3f}.pth'.format(classifier_id,
+                                                                                epoch, rs['train']['top1'], rs['test']['top1'])))
+
+    del model
+
+    result['top1_test'] = best_top1
+    return result
+
+
+# In[3]:
+
+
+#
+
+tag = ''
+dataroot = 'data'
+save_path = './trained_models/cifar100_pyramid272_100outputs_plus10iter.pth'
+cv_ratio = 0.0
+cv = 0
+horovod = None
+only_eval = None
+classifier_id = 0
+nb_labels = 100
+
+assert (only_eval and save_path or not only_eval), 'checkpoint path not provided in evaluation mode.'
+
+permutated_vec = np.load('2_label_permutation_cifar100.npy').T[:,:nb_labels]#[int(classifier_id)]
+
+
+if not only_eval:
+    if save_path:
+        logger.info('checkpoint will be saved at %s' % save_path)
+    else:
+        logger.warning('''Provide --save argument to save the checkpoint. 
+                       Without it, training result will not be saved!''')
+
+t = time.time()
+result = train_and_eval(tag, dataroot, test_ratio=cv_ratio,
+                        cv_fold=cv, save_path=save_path, only_eval=only_eval,
+                        horovod=horovod, metric='test', permutated_vec=permutated_vec,
+                        nb_labels=nb_labels, classifier_id=classifier_id)
+elapsed = time.time() - t
+
+
+
