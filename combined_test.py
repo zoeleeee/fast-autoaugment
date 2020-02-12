@@ -113,7 +113,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	print('adversarial acc:', len(wr)/imgs.shape[0])
 
 def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500epochs.pth', nb_labels=30):
-	device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 	reps = np.load('2_label_permutation_cifar100.npy')[:100].T
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
