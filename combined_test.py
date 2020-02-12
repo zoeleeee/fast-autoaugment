@@ -188,7 +188,7 @@ if __name__ == '__main__':
 	# get_normal_data()
 	idx = sys.argv[-2]
 	label_path = 'cifar100_labels_{}.npy'.format(idx)
-	imgs = np.load('cifar100_advs_{}.npy'.format(idx)).to(device)
+	imgs = np.load('cifar100_advs_{}.npy'.format(idx))
 	nb_labels = sys.argv[-3]
 	if sys.argv[-1] == 'origin':
 		_ = C('confs/pyramid272_cifar100_2.yaml')
