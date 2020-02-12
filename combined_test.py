@@ -27,10 +27,9 @@ def target_model(save_path, nb_labels = 2, device=None):
 	if type(device) != type(None):
 		if torch.cuda.device_count() > 1:
 			print('number of devices:', torch.cuda.device_count())
-			model = nn.DataParallel(model).cuda()
+			model = torch.nn.DataParallel(model).cuda()
 			# model = DDP(get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels)), device_ids=[0,1])
-		else:
-			model.to(device)
+		model.to(device)
 		
 	if save_path and os.path.exists(save_path):
 		data = torch.load(save_path)
@@ -114,7 +113,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 	print('adversarial acc:', len(wr)/imgs.shape[0])
 
 def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500epochs.pth', nb_labels=30):
-	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+	device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 	reps = np.load('2_label_permutation_cifar100.npy')[:100].T
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
@@ -126,7 +125,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 	score = []
 	for images, label in loader:
 		print('1')
-		outputs = model(images.cuda())
+		outputs = model(images.to(device))
 		predicted = torch.sigmoid(outputs)
 
 		_predicted = predicted.detach().cpu().numpy()
