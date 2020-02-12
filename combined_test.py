@@ -20,13 +20,18 @@ def label_permutation(labels, nb_labels, classifier_id):
     	labels[tmp==i] = permutated_vec[i]
     return labels
 
-def target_model(save_path, nb_labels = 2):
-	model = torch.nn.DataParallel(get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels)))
+def target_model(save_path, nb_labels = 2, device=None):
+	if type(device) != type(None):
+		if torch.cuda.device_count() > 1:
+			model = torch.nn.DataParallel(get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels)))
+		model.to(device)
+	else:
+		model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels))
 	if save_path and os.path.exists(save_path):
 		data = torch.load(save_path)
 		if 'model' in data or 'state_dict' in data:
 			key = 'model' if 'model' in data else 'state_dict'
-			model.load_state_dict({k if 'module.module.' in k else 'module.module.'+k: v for k, v in data[key].items()})
+			model.load_state_dict({k if 'module.module.' in k else 'module.'+k: v for k, v in data[key].items()})
 		else:
 			model.load_state_dict({k: v for k, v in data.items()})
 		del data
@@ -180,9 +185,10 @@ def get_normal_data():
 
 if __name__ == '__main__':
 	# get_normal_data()
+	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 	idx = sys.argv[-2]
 	label_path = 'cifar100_labels_{}.npy'.format(idx)
-	imgs = np.load('cifar100_advs_{}.npy'.format(idx))
+	imgs = np.load('cifar100_advs_{}.npy'.format(idx)).to(device)
 	nb_labels = sys.argv[-3]
 	if sys.argv[-1] == 'origin':
 		_ = C('confs/pyramid272_cifar100_2.yaml')
