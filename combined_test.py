@@ -23,14 +23,15 @@ def label_permutation(labels, nb_labels, classifier_id):
     return labels
 
 def target_model(save_path, nb_labels = 2, device=None):
+	model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels))
 	if type(device) != type(None):
 		if torch.cuda.device_count() > 1:
 			print('number of devices:', torch.cuda.device_count())
-			model = DDP(get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels)), device_ids=[0,1])
+			model = nn.DataParallel(model).cuda()
+			# model = DDP(get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels)), device_ids=[0,1])
 		else:
 			model.to(device)
-	else:
-		model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels))
+		
 	if save_path and os.path.exists(save_path):
 		data = torch.load(save_path)
 		if 'model' in data or 'state_dict' in data:
@@ -125,7 +126,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 	score = []
 	for images, label in loader:
 		print('1')
-		outputs = model(images)
+		outputs = model(images.cuda())
 		predicted = torch.sigmoid(outputs)
 
 		_predicted = predicted.detach().cpu().numpy()
