@@ -12,6 +12,8 @@ import copy
 from FastAutoAugment.metrics import accuracy
 from cws import get_data
 import torch.nn.functional as F
+from torch.nn.parallel import DistributedDataParallel as DDP
+
 
 def label_permutation(labels, nb_labels, classifier_id):
     permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(classifier_id)]
@@ -23,8 +25,10 @@ def label_permutation(labels, nb_labels, classifier_id):
 def target_model(save_path, nb_labels = 2, device=None):
 	if type(device) != type(None):
 		if torch.cuda.device_count() > 1:
-			model = torch.nn.DataParallel(get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels)))
-		model.to(device)
+			print('number of devices:', torch.cuda.device_count())
+			model = DDP(get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels)), device_ids=[0,1])
+		else:
+			model.to(device)
 	else:
 		model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels))
 	if save_path and os.path.exists(save_path):
@@ -120,7 +124,8 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 	model.eval()
 	score = []
 	for images, label in loader:
-		outputs = model(images.to(f'cuda:{model.device_ids[0]}'))
+		print('1')
+		outputs = model(images)
 		predicted = torch.sigmoid(outputs)
 
 		_predicted = predicted.detach().cpu().numpy()
