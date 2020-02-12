@@ -21,7 +21,7 @@ def label_permutation(labels, nb_labels, classifier_id):
     return labels
 
 def target_model(save_path, nb_labels = 2):
-	model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels))
+	model = torch.nn.DataParallel(get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels)))
 	if save_path and os.path.exists(save_path):
 		data = torch.load(save_path)
 		if 'model' in data or 'state_dict' in data:
