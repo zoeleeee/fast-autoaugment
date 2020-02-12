@@ -120,7 +120,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 	model.eval()
 	score = []
 	for images, label in loader:
-		outputs = model(images.cuda())
+		outputs = model(images.to(f'cuda:{model.device_ids[0]}'))
 		predicted = torch.sigmoid(outputs)
 
 		_predicted = predicted.detach().cpu().numpy()
