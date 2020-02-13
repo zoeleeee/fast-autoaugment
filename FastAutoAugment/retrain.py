@@ -1,3 +1,7 @@
+'''
+export PYTHONPATH=$PYTHONPATH:$PWD
+python FastAutoAugment/train.py -c confs/pyramid272_cifar100_2.yaml --aug fa_reduced_cifar10 --dataset cifar100 --dataroot ../data --save cifar100_pyramid272_top1_11.74.pth --nb-labels 10 --beg 20
+'''
 import itertools
 import json
 import logging
@@ -245,19 +249,19 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                     loss_test=rs['test']['loss'], top1_test=rs['test']['top1']
                 )
 
-                # save checkpoint
-                # if is_master and save_path:
-                #     logger.info('save model@%d to %s' % (epoch, save_path))
-                    # torch.save({
-                    #     'epoch': epoch,
-                    #     'log': {
-                    #         'train': rs['train'].get_dict(),
-                    #         'valid': rs['valid'].get_dict(),
-                    #         'test': rs['test'].get_dict(),
-                    #     },
-                    #     'optimizer': optimizer.state_dict(),
-                    #     'model': model.state_dict()
-                    # }, save_path)
+                save checkpoint
+                if is_master and save_path:
+                    logger.info('save model@%d to %s' % (epoch, save_path))
+                    torch.save({
+                        'epoch': epoch,
+                        'log': {
+                            'train': rs['train'].get_dict(),
+                            'valid': rs['valid'].get_dict(),
+                            'test': rs['test'].get_dict(),
+                        },
+                        'optimizer': optimizer.state_dict(),
+                        'model': model.state_dict()
+                    }, save_path)
     torch.save({
         'epoch': epoch,
         'log': {
@@ -274,6 +278,11 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
     result['top1_test'] = best_top1
     return result
 
+def binary_decimal(idxs, nb_labels):
+    std = np.array([np.power(2,i) for i in range(nb_labels)])
+    permutated_vec = np.load('2_label_permutation_cifar100.npy')[idxs].T
+    return np.sum(permutated_vec*std, axis=-1)
+
 
 if __name__ == '__main__':
     parser = ConfigArgumentParser(conflict_handler='resolve')
@@ -286,6 +295,7 @@ if __name__ == '__main__':
     parser.add_argument('--only-eval', action='store_true')
     parser.add_argument('--classifier-id', type=int, default=0)
     parser.add_argument('--nb-labels', type=int, default=1e6)
+    parser.add_argument('--beg', type=int, default=0)
     args = parser.parse_args()
 
     assert not (args.horovod and args.only_eval), 'can not use horovod when evaluation mode is enabled.'
@@ -295,7 +305,11 @@ if __name__ == '__main__':
     nb_labels = 1e6
     if args.nb_labels != 1e6:
         nb_labels = args.nb_labels
-        permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(args.classifier_id)]
+        if os.path.exists('{}_label_permutation_cifar100.npy'.format(nb_labels)):
+            permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(args.classifier_id)]
+        else:
+            idxs = np.arange(beg, beg+nb_labels)
+            permutated_vec = binary_decimal(idxs, nb_labels)
         
 
     if not args.only_eval:
