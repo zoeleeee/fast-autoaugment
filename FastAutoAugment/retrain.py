@@ -1,6 +1,7 @@
 '''
 export PYTHONPATH=$PYTHONPATH:$PWD
-python FastAutoAugment/train.py -c confs/pyramid272_cifar100_2.yaml --aug fa_reduced_cifar10 --dataset cifar100 --dataroot ../data --save cifar100_pyramid272_top1_11.74.pth --nb-labels 10 --beg 20
+python FastAutoAugment/train.py -c confs/flower_cifar100_10.yaml --aug fa_reduced_cifar10 --dataset cifar100 --dataroot ../data --save cifar100_pyramid272_top1_11.74.pth --nb-labels 10 --beg 20
+python FastAutoAugment/train.py -c confs/pyramid272_cifar100_2_tl_re.yaml --aug fa_reduced_cifar10 --dataset cifar100 --dataroot ../data --save cifar100_pyramid272_top1_11.74.pth --nb-labels 10 --beg 20 --binary 0
 '''
 import itertools
 import json
@@ -121,8 +122,10 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
     model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels), data_parallel=(not horovod))
     # print(model)
     # return
-
-    criterion = nn.CrossEntropyLoss()
+    if C.get()['model'] == 'flower':
+        criterion = nn.BCELoss()
+    else:
+        criterion = nn.CrossEntropyLoss()
     if C.get()['optimizer']['type'] == 'sgd':
         optimizer = optim.SGD(
             model.parameters(),
@@ -278,10 +281,9 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
     result['top1_test'] = best_top1
     return result
 
-def binary_decimal(idxs, nb_labels):
+def binary_decimal(permutated_vec, nb_labels):
     std = np.array([np.power(2,i) for i in range(nb_labels)])
-    permutated_vec = np.load('2_label_permutation_cifar100.npy')[idxs].T
-    return np.sum(permutated_vec*std, axis=-1)
+    return np.sum(permutated_vec.T*std, axis=-1)
 
 
 if __name__ == '__main__':
@@ -296,6 +298,7 @@ if __name__ == '__main__':
     parser.add_argument('--classifier-id', type=int, default=0)
     parser.add_argument('--nb-labels', type=int, default=1e6)
     parser.add_argument('--beg', type=int, default=0)
+    parser.add_argument('--binary', type=int, default=1)
     args = parser.parse_args()
 
     assert not (args.horovod and args.only_eval), 'can not use horovod when evaluation mode is enabled.'
@@ -308,8 +311,10 @@ if __name__ == '__main__':
         if os.path.exists('{}_label_permutation_cifar100.npy'.format(nb_labels)):
             permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(args.classifier_id)]
         else:
-            idxs = np.arange(beg, beg+nb_labels)
-            permutated_vec = binary_decimal(idxs, nb_labels)
+            idxs = np.arange(int(args.beg), int(args.beg)+nb_labels)
+            permutated_vec = np.load('2_label_permutation_cifar100.npy')[idxs]
+            if args.binary == 1:
+                permutated_vec = binary_decimal(permutated_vec, nb_labels)
         
 
     if not args.only_eval:
