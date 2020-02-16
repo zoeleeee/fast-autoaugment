@@ -267,7 +267,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                         },
                         'optimizer': optimizer.state_dict(),
                         'model': model.state_dict()
-                    }, os.path.join(path, save_path))
+                    }, os.path.join(path, save_path.replace('.pth', '_{}_{}_top1_{:.3f}_{:.3f}.pth'.format(classifier_id, epoch, rs['train']['top1'], rs['test']['top1']))))
     torch.save({
         'epoch': epoch,
         'log': {
