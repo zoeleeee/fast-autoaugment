@@ -220,6 +220,9 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
         return result
 
     # train loop
+    path = C.get()['model']
+    if not os.path.exists(path):
+        os.makedirs(path)
     best_top1 = 0
     for epoch in range(epoch_start, max_epoch + 1):
         if horovod:
@@ -264,7 +267,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                         },
                         'optimizer': optimizer.state_dict(),
                         'model': model.state_dict()
-                    }, save_path)
+                    }, os.path.join(path, save_path))
     torch.save({
         'epoch': epoch,
         'log': {
@@ -274,7 +277,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
         },
         'optimizer': optimizer.state_dict(),
         'model': model.state_dict()
-    }, save_path.replace('.pth', '_{}_{}_top1_{:.3f}_{:.3f}.pth'.format(classifier_id, epoch, rs['train']['top1'], rs['test']['top1'])))
+    }, os.path.join(path, save_path.replace('.pth', '_{}_{}_top1_{:.3f}_{:.3f}.pth'.format(classifier_id, epoch, rs['train']['top1'], rs['test']['top1']))))
 
     del model
 
@@ -311,7 +314,7 @@ if __name__ == '__main__':
         if os.path.exists('{}_label_permutation_cifar100.npy'.format(nb_labels)):
             permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(args.classifier_id)]
         else:
-            idxs = np.arange(int(args.beg), int(args.beg)+nb_labels)
+            idxs = np.load('order.npy')#np.arange(int(args.beg), int(args.beg)+nb_labels)
             permutated_vec = np.load('2_label_permutation_cifar100.npy')[idxs]
             if args.binary == 1:
                 permutated_vec = binary_decimal(permutated_vec, nb_labels)
