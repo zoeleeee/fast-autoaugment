@@ -5,8 +5,9 @@
 
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+# os.environ["CUDA_VISIBLE_DEVICES"]="1,2"
 #os.environ["CUDA_LAUNCH_BLOCKING"]="1"
+import sys
 import itertools
 import json
 import logging
@@ -149,14 +150,14 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                 # only for Pyramid cifar100
                 weights = {k.replace('module.', ''): v for k, v in data[key].items()}
                 
-                #weights['fc.weight'] = torch.rand_like(model.state_dict()['fc.weight'])
-                #weights['fc.bias'] = torch.rand_like(model.state_dict()['fc.bias'])
+                weights['fc.weight'] = torch.rand_like(model.state_dict()['fc.weight'])
+                weights['fc.bias'] = torch.rand_like(model.state_dict()['fc.bias'])
                 model.load_state_dict(weights)
             else:
                 weights = {k if 'module.' in k else 'module.'+k: v for k, v in data[key].items()}
                 
-                #weights['module.fc.weight'] = torch.rand_like(model.state_dict()['module.fc.weight'])
-                #weights['module.fc.bias'] = torch.rand_like(model.state_dict()['module.fc.bias'])
+                weights['module.fc.weight'] = torch.rand_like(model.state_dict()['module.fc.weight'])
+                weights['module.fc.bias'] = torch.rand_like(model.state_dict()['module.fc.bias'])
                 model.load_state_dict(weights)
             
             if data['epoch'] < C.get()['epoch']:
@@ -175,24 +176,24 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
         del data
         
 
-#     else:
-#         logger.info('"%s" file not found. skip to pretrain weights...' % save_path)
-#         if only_eval:
-#             logger.warning('model checkpoint not found. only-evaluation mode is off.')
-#         only_eval = False
+    else:
+        logger.info('"%s" file not found. skip to pretrain weights...' % save_path)
+        if only_eval:
+            logger.warning('model checkpoint not found. only-evaluation mode is off.')
+        only_eval = False
 
-#     if C.get()['optimizer']['type'] == 'sgd':
-#         optimizer = optim.SGD(
-#             model.parameters(),
-#             lr=C.get()['lr'],
-#             momentum=C.get()['optimizer'].get('momentum', 0.9),
-#             weight_decay=C.get()['optimizer']['decay'],
-#             nesterov=C.get()['optimizer']['nesterov']
-#         )
-#     else:
-#         raise ValueError('invalid optimizer type=%s' % C.get()['optimizer']['type'])
+    if C.get()['optimizer']['type'] == 'sgd':
+        optimizer = optim.SGD(
+            model.parameters(),
+            lr=C.get()['lr'],
+            momentum=C.get()['optimizer'].get('momentum', 0.9),
+            weight_decay=C.get()['optimizer']['decay'],
+            nesterov=C.get()['optimizer']['nesterov']
+        )
+    else:
+        raise ValueError('invalid optimizer type=%s' % C.get()['optimizer']['type'])
     
-    optimizer = optim.AdamW(model.parameters(),lr=1e-3,amsgrad=True)
+    #optimizer = optim.AdamW(model.parameters(),lr=1e-3,amsgrad=True)
         
         
         
@@ -289,20 +290,23 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
 
 
 #
-
+torch.manual_seed(7)
 tag = ''
-dataroot = 'data'
-save_path = './trained_models/cifar100_pyramid272_100outputs_plus10iter.pth'
+dataroot = './dataroot/'
+save_path = './trained_models2/cifar100_pyramid272_top1_11.74.pth'
 cv_ratio = 0.0
 cv = 0
 horovod = None
 only_eval = None
 classifier_id = 0
-nb_labels = 100
+nb_labels = 10
+beg = sys.argv[-1]
 
 assert (only_eval and save_path or not only_eval), 'checkpoint path not provided in evaluation mode.'
 
-permutated_vec = np.load('2_label_permutation_cifar100.npy').T[:,:nb_labels]#[int(classifier_id)]
+idxs = np.load('order.npy')
+permutated_vec = np.load('2_label_permutation_cifar100.npy')[idxs]#[int(classifier_id)]
+permutated_vec = permutated_vec[beg:beg+10].T
 
 
 if not only_eval:
