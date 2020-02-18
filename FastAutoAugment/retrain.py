@@ -318,7 +318,7 @@ if __name__ == '__main__':
             idxs = np.load('order.npy')#np.arange(int(args.beg), int(args.beg)+nb_labels)
             permutated_vec = np.load('2_label_permutation_cifar100.npy')[idxs]
             if args.binary == 1:
-                permutated_vec = binary_decimal(permutated_vec, nb_labels)
+                permutated_vec = binary_decimal(permutated_vec[args.beg:args.beg+args.nb_labels], nb_labels)
         
 
     if not args.only_eval:
