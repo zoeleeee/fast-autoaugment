@@ -59,7 +59,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 			labels = label_permutation(np.load(label_path), nb_labels, i)
 			# print(labels.shape)
 			dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-			loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+			loader = data.DataLoader(dataset, batch_size=16, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
 			preds = []
 			valid = []
 			score = []
@@ -148,29 +148,32 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 	np.save('_score_30_500epochs.npy', score)
 	print('acc:', np.mean(valid))
 
-def check_origin(imgs, label_path, path='cifar100_pyramid272_30outputs_500epochs.pth', nb_labels=100):
+def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth', nb_labels=100):
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
-	preds = []
+	preds, outs = [], []
 	valid = []
 	model = target_model(path, nb_labels=nb_labels)
 	model.eval()
 	for images, label in loader:
 		outputs = model(images)
-		_, predicted = torch.max(outputs, 1)
+		pred = torch.nn.functional.softmax(outputs)
+		# _, predicted = torch.max(outputs, 1)
 		# _, predicted = torch.sigmoid(outputs, 1)
 
-		_predicted = predicted.to('cpu').numpy()
-		_label = label.to('cpu').numpy()
+		_predicted = pred.to('cpu').numpy()
+		# _label = label.to('cpu').numpy()
 		if len(preds) == 0:
 			preds = _predicted
-			valid = (_predicted == _label)
+			valid = (np.argmax(_predicted) == _label)
+			outs = outputs.detach().cpu().numpy()
 		else:
 			preds = np.hstack((preds, _predicted))
-			valid = np.hstack((valid, (_predicted==_label)))
-	np.save('{}_100classifier_500epochs.npy'.format(label_path[:-4]), preds)
-	np.save('{}_100classifier_500epochs.npy'.format(label_path[:-4]), valid)
+			outs = np.hstack((outs, outputs.detach().cpu().numpy()))
+	np.save('output_normal_cifar100.npy', outs)
+	np.save('softmax_normal_cifar100.npy', preds)
+	# np.save('{}_100classifier_500epochs.npy'.format(label_path[:-4]), valid)
 	print('acc:', np.mean(valid))
 
 def get_normal_data():
