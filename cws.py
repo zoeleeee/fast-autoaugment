@@ -32,7 +32,7 @@ def target_model(save_path):
 		del data
 	return model
 
-def pgd(fmodel):
+def pgd(fmodel, loader):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
 	for idx, (images, labels) in enumerate(loader):
 		attack = foolbox.v1.attacks.ProjectedGradientDescentAttack(fmodel, distance=foolbox.distances.Linfinity)
@@ -43,7 +43,7 @@ def pgd(fmodel):
 		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
 		np.save('pgd_advs/cifar100_pgd_advs_{}.npy'.format(idx), adv_imgs)
 
-def ead(fmodel):
+def ead(fmodel, loader):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
 	# loader = get_data()
 	for idx, (images, labels) in enumerate(loader):
@@ -111,7 +111,7 @@ def main():
 	model = target_model(sys.argv[-2]).eval()
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
 	loader = get_data(sys.argv[-4])
-	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100, preprocessing=preprocessing)
+	fmodel = foolbox.mopyramid272_cifar100_2dels.PyTorchModel(model, bounds=(-3, 3), num_classes=100, preprocessing=preprocessing)
 	if sys.argv[-3] == 'ead':
 		ead(fmodel, loader)
 	elif sys.argv[-3] == 'pgd':
