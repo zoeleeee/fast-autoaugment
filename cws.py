@@ -33,18 +33,36 @@ def target_model(save_path):
 		del data
 	return model
 
+def pgd(fmodel):
+	adv_imgs, labels, distances, adv_classes = [], [], [], []
+	loader = get_data()
+	for idx, (images, labels) in enumerate(loader):
+		attack = foolbox.v1.attacks.ProjectedGradientDescentAttack(fmodel, distance=foolbox.distances.Linfinity)
+		adversarials = attack(images, labels, unpack=False)
+		adv_imgs += [a.perturbed for a in adversarials]
+		distances += np.asarray([a.distance.value for a in adversarials])
+		adversarial_classes = [a.adversarial_class for a in adversarials]
+		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
+		np.save('pgd_advs/cifar100_pgd_advs_{}.npy'.format(idx), adv_imgs)
 
-if __name__ == '__main__':
-	_ = C(sys.argv[-1])
-	model = target_model(sys.argv[-2]).eval()
-	# model.eval()
-	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
-	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100, preprocessing=preprocessing)
+def ead(fmodel):
+	adv_imgs, labels, distances, adv_classes = [], [], [], []
+	loader = get_data()
+	for idx, (images, labels) in enumerate(loader):
+		attack = foolbox.v1.attacks.EADAttack(fmodel, distance=foolbox.distances.MeanAbsoluteDistance)
+		adversarials = attack(images, labels, unpack=False)
+		adv_imgs += [a.perturbed for a in adversarials]
+		distances += np.asarray([a.distance.value for a in adversarials])
+		adversarial_classes = [a.adversarial_class for a in adversarials]
+		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
+		np.save('ead_advs/cifar100_ead_advs_{}.npy'.format(idx), adv_imgs)
 
+
+
+def cws(fmodel):
 	normal_correct = 0
 	adv_correct = 0
-	adv_imgs = []
-	labels = []
+	adv_imgs, labels, distances, adv_classes = [], [], [], []
 	loader = get_data()
 	print(len(loader.dataset))
 	cnt = 0
@@ -66,7 +84,9 @@ if __name__ == '__main__':
 		attack = foolbox.attacks.CarliniWagnerL2Attack(fmodel, distance=foolbox.distances.MeanSquaredDistance)
 		adversarials = attack(images, label, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
+		distances += np.asarray([a.distance.value for a in adversarials])
 		adversarial_classes = [a.adversarial_class for a in adversarials]
+		adv_classes += adversarial_classes
 		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
 		if labels == []:
 			labels = label
@@ -88,3 +108,19 @@ if __name__ == '__main__':
 	print("{:.1e}, {:.1e}, {:.1e}".format(distances.min(), np.median(distances), distances.max()))
 	print("{} of {} attacks failed".format(sum(adv.distance.value == np.inf for adv in adversarials), len(adversarials)))
 	print("{} of {} inputs misclassified without perturbation".format(sum(adv.distance.value == 0 for adv in adversarials), len(adversarials)))
+
+def main():
+	model = target_model(sys.argv[-2]).eval()
+	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
+	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100, preprocessing=preprocessing)
+	if sys.argv[-3] == 'ead':
+		ead(fmodel)
+	elif sys.argv[-3] == 'pgd':
+		pgd(fmodel)
+	elif sys.argv[-3] == 'cws':
+		cws(fmodel)
+
+if __name__ == '__main__':
+	_ = C(sys.argv[-1])
+	main()
+	
