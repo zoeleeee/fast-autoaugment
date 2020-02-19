@@ -16,8 +16,7 @@ def get_data(path = '/home/zhuzby/data'):
 		])
 	testset = torchvision.datasets.CIFAR100(root=path, train=False, download=True, transform=transform_test)
 	testloader = torch.utils.data.DataLoader(
-		testset, batch_size=20, shuffle=False, num_workers=32, pin_memory=True,
-		drop_last=False
+		testset, batch_size=16, shuffle=False, num_workers=2, pin_memory=True, drop_last=False
 	)
 	return testloader
 
@@ -35,7 +34,6 @@ def target_model(save_path):
 
 def pgd(fmodel):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
-	loader = get_data()
 	for idx, (images, labels) in enumerate(loader):
 		attack = foolbox.v1.attacks.ProjectedGradientDescentAttack(fmodel, distance=foolbox.distances.Linfinity)
 		adversarials = attack(images, labels, unpack=False)
@@ -47,7 +45,7 @@ def pgd(fmodel):
 
 def ead(fmodel):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
-	loader = get_data()
+	# loader = get_data()
 	for idx, (images, labels) in enumerate(loader):
 		attack = foolbox.v1.attacks.EADAttack(fmodel, distance=foolbox.distances.MeanAbsoluteDistance)
 		adversarials = attack(images, labels, unpack=False)
@@ -59,11 +57,11 @@ def ead(fmodel):
 
 
 
-def cws(fmodel):
+def cws(fmodel, loader):
 	normal_correct = 0
 	adv_correct = 0
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
-	loader = get_data()
+	# loader = get_data()
 	print(len(loader.dataset))
 	cnt = 0
 	for images, label in loader:
@@ -112,13 +110,14 @@ def cws(fmodel):
 def main():
 	model = target_model(sys.argv[-2]).eval()
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
+	loader = get_data(sys.argv[-3])
 	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100, preprocessing=preprocessing)
 	if sys.argv[-3] == 'ead':
-		ead(fmodel)
+		ead(fmodel, loader)
 	elif sys.argv[-3] == 'pgd':
-		pgd(fmodel)
+		pgd(fmodel, loader)
 	elif sys.argv[-3] == 'cws':
-		cws(fmodel)
+		cws(fmodel, loader)
 
 if __name__ == '__main__':
 	_ = C(sys.argv[-1])

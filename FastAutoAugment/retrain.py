@@ -180,11 +180,16 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
             logger.info('checkpoint epoch@%d' % data['epoch'])
             if not isinstance(model, DataParallel):
                 # only for Pyramid cifar100
-                if C.get()['model'] != 'flower':
+                if C.get()['model'] == 'flower':
+                    weights = {k.replace('module.', 'model.'): v for k, v in data[key].items()}
+                    weights['model.fc.weight'] = torch.rand_like(model.state_dict()['model.fc.weight'])
+                    weights['model.fc.weight'] = torch.rand_like(model.state_dict()['model.fc.weight'])
+                    weights['fc.bias'] = torch.rand_like(model.state_dict()['fc.bias'])
+                    weights['fc.bias'] = torch.rand_like(model.state_dict()['fc.bias'])
+                else:
                     weights = {k.replace('module.', ''): v for k, v in data[key].items()}
                     weights['fc.weight'] = torch.rand_like(model.state_dict()['fc.weight'])
-                    weights['fc.bias'] = torch.rand_like(model.state_dict()['fc.bias'])
-                    model.load_state_dict(weights)
+                    weights['fc.weight'] = torch.rand_like(model.state_dict()['fc.weight'])
             else:
                 if C.get()['model'] == 'flower':
                     weights = {k if 'module.model.' in k else k.replace('module.', 'module.model.'): v for k, v in data[key].items()}
@@ -197,7 +202,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                     weights['module.fc.weight'] = torch.rand_like(model.state_dict()['module.fc.weight'])
                     weights['module.fc.bias'] = torch.rand_like(model.state_dict()['module.fc.bias'])
                 # weights['module.model.bn']
-                model.load_state_dict(weights)
+            model.load_state_dict(weights)
             # optimizer.load_state_dict(data['optimizer'])
             if data['epoch'] < C.get()['epoch']:
                 epoch_start = data['epoch']
