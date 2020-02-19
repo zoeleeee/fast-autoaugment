@@ -1,7 +1,7 @@
 '''
 export PYTHONPATH=$PYTHONPATH:$PWD
-python FastAutoAugment/train.py -c confs/flower_cifar100_10.yaml --aug fa_reduced_cifar10 --dataset cifar100 --dataroot ../data --save cifar100_pyramid272_top1_11.74.pth --nb-labels 10 --beg 20
-python FastAutoAugment/train.py -c confs/pyramid272_cifar100_2_tl_re.yaml --aug fa_reduced_cifar10 --dataset cifar100 --dataroot ../data --save cifar100_pyramid272_top1_11.74.pth --nb-labels 10 --beg 20 --binary 0
+python FastAutoAugment/train.py -c confs/flower_cifar100_10.yaml --aug fa_reduced_cifar10 --dataset cifar100 --dataroot ../data --save cifar100_pyramid272_top1_11.74.pth --nb-labels 10 --beg 20  --binary 0
+python FastAutoAugment/train.py -c confs/pyramid272_cifar100_2_tl_re.yaml --aug fa_reduced_cifar10 --dataset cifar100 --dataroot ../data --save cifar100_pyramid272_top1_11.74.pth --nb-labels 10 --beg 20
 '''
 import itertools
 import json
@@ -50,7 +50,7 @@ def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, write
     for data, label in loader:
         steps += 1
         # print(torch.max(data).item(), torch.min(data).item())
-        data, label = data.cuda(), label.cuda()
+        data, label = data.cuda(), torch.FloatTensor(label).cuda()
 
         if optimizer:
             optimizer.zero_grad()
@@ -300,7 +300,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
 
 def binary_decimal(permutated_vec, nb_labels):
     std = np.array([np.power(2,i) for i in range(nb_labels)])
-    return np.sum(permutated_vec.T*std, axis=-1)
+    return np.sum(permutated_vec*std, axis=-1)
 
 
 if __name__ == '__main__':
@@ -329,9 +329,9 @@ if __name__ == '__main__':
             permutated_vec = np.load('{}_label_permutation_cifar100.npy'.format(nb_labels))[int(args.classifier_id)]
         else:
             idxs = np.load('order.npy')#np.arange(int(args.beg), int(args.beg)+nb_labels)
-            permutated_vec = np.load('2_label_permutation_cifar100.npy')[idxs]
+            permutated_vec = np.load('2_label_permutation_cifar100.npy')[idxs][args.beg:args.beg+nb_labels].T
             if args.binary == 1:
-                permutated_vec = binary_decimal(permutated_vec[args.beg:args.beg+args.nb_labels], nb_labels)
+                permutated_vec = binary_decimal(permutated_vec, nb_labels)
         
 
     if not args.only_eval:
