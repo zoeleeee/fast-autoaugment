@@ -35,6 +35,7 @@ def target_model(save_path):
 def pgd(fmodel, loader):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
 	for idx, (images, labels) in enumerate(loader):
+		images, label = images.numpy(), label.numpy()
 		attack = foolbox.v1.attacks.ProjectedGradientDescentAttack(fmodel, distance=foolbox.distances.Linfinity)
 		adversarials = attack(images, labels, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
@@ -47,6 +48,7 @@ def ead(fmodel, loader):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
 	# loader = get_data()
 	for idx, (images, labels) in enumerate(loader):
+		images, label = images.numpy(), label.numpy()
 		attack = foolbox.v1.attacks.EADAttack(fmodel, distance=foolbox.distances.MeanAbsoluteDistance)
 		adversarials = attack(images, labels, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
