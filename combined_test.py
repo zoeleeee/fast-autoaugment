@@ -152,7 +152,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth', nb_labels=100):
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+	loader = data.DataLoader(dataset, batch_size=16, shuffle=False, num_workers=2, pin_memory=True, drop_last=False)
 	preds, outs = [], []
 	valid = []
 	model = target_model(path, nb_labels=nb_labels)
