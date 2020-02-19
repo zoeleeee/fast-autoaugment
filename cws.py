@@ -35,10 +35,11 @@ def target_model(save_path):
 def pgd(fmodel, loader):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
 	adv_correct = 0
+	attack = foolbox.v1.attacks.ProjectedGradientDescentAttack(fmodel, distance=foolbox.distances.Linfinity)
 	for idx, (images, labels) in enumerate(loader):
+		print(idx)
 		images, labels = images.numpy(), labels.numpy()
 		print(images.shape)
-		attack = foolbox.v1.attacks.ProjectedGradientDescentAttack(fmodel, distance=foolbox.distances.Linfinity)
 		adversarials = attack(images, labels, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
 		distances += [a.distance.value for a in adversarials]
@@ -51,10 +52,11 @@ def pgd(fmodel, loader):
 
 def ead(fmodel, loader):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
+	attack = foolbox.v1.attacks.EADAttack(fmodel, distance=foolbox.distances.MeanAbsoluteDistance)
 	adv_correct = 0
 	for idx, (images, labels) in enumerate(loader):
+		print(idx)
 		images, labels = images.numpy(), labels.numpy()
-		attack = foolbox.v1.attacks.EADAttack(fmodel, distance=foolbox.distances.MeanAbsoluteDistance)
 		adversarials = attack(images, labels, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
 		distances += [a.distance.value for a in adversarials]
@@ -66,7 +68,7 @@ def ead(fmodel, loader):
 
 
 
-def cws(fmodel, loader):
+def cws(model, fmodel, loader):
 	normal_correct = 0
 	adv_correct = 0
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
@@ -126,7 +128,7 @@ def main():
 	elif sys.argv[-3] == 'pgd':
 		pgd(fmodel, loader)
 	elif sys.argv[-3] == 'cws':
-		cws(fmodel, loader)
+		cws(model, fmodel, loader)
 
 if __name__ == '__main__':
 	_ = C(sys.argv[-1])
