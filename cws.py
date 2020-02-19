@@ -37,6 +37,7 @@ def pgd(fmodel, loader):
 	adv_correct = 0
 	for idx, (images, labels) in enumerate(loader):
 		images, labels = images.numpy(), labels.numpy()
+		print(images.shape)
 		attack = foolbox.v1.attacks.ProjectedGradientDescentAttack(fmodel, distance=foolbox.distances.Linfinity)
 		adversarials = attack(images, labels, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
