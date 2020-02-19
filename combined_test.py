@@ -164,7 +164,7 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth', nb
 		# _, predicted = torch.sigmoid(outputs, 1)
 
 		_predicted = pred.detach().to('cpu').numpy()
-		# _label = label.to('cpu').numpy()
+		_label = label.to('cpu').numpy()
 		if len(preds) == 0:
 			preds = _predicted
 			valid = (np.argmax(_predicted) == _label)
