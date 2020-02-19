@@ -110,7 +110,7 @@ def cws(fmodel, loader):
 def main():
 	model = target_model(sys.argv[-2]).eval()
 	preprocessing = dict(mean=[0,0,0], std=[1,1,1], axis=-3)
-	loader = get_data(sys.argv[-3])
+	loader = get_data(sys.argv[-4])
 	fmodel = foolbox.models.PyTorchModel(model, bounds=(-3, 3), num_classes=100, preprocessing=preprocessing)
 	if sys.argv[-3] == 'ead':
 		ead(fmodel, loader)
