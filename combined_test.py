@@ -159,7 +159,8 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth', nb
 	model.eval()
 	for images, label in loader:
 		outputs = model(images)
-		pred = torch.nn.functional.softmax(outputs)
+		print(outputs.size())
+		pred = torch.nn.functional.softmax(outputs, dim=-1)
 		# _, predicted = torch.max(outputs, 1)
 		# _, predicted = torch.sigmoid(outputs, 1)
 
@@ -167,11 +168,11 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth', nb
 		_label = label.to('cpu').numpy()
 		if len(preds) == 0:
 			preds = _predicted
-			valid = (np.argmax(_predicted) == _label)
+			valid = (np.argmax(_predicted, axis=-1) == _label)
 			outs = outputs.detach().cpu().numpy()
 		else:
 			preds = np.hstack((preds, _predicted))
-			valid = np.hstack((valid, (np.argmax(_predicted) == _label)))
+			valid = np.hstack((valid, (np.argmax(_predicted, axis=-1) == _label)))
 			outs = np.hstack((outs, outputs.detach().cpu().numpy()))
 	np.save('output_normal_cifar100.npy', outs)
 	np.save('softmax_normal_cifar100.npy', preds)
