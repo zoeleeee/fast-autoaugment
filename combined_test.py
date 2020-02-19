@@ -171,6 +171,7 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth', nb
 			outs = outputs.detach().cpu().numpy()
 		else:
 			preds = np.hstack((preds, _predicted))
+			valid = np.hstack((valid, (np.argmax(_predicted) == _label)))
 			outs = np.hstack((outs, outputs.detach().cpu().numpy()))
 	np.save('output_normal_cifar100.npy', outs)
 	np.save('softmax_normal_cifar100.npy', preds)
