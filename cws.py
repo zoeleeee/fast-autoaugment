@@ -34,28 +34,34 @@ def target_model(save_path):
 
 def pgd(fmodel, loader):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
+	adv_correct = 0
 	for idx, (images, labels) in enumerate(loader):
-		images, label = images.numpy(), label.numpy()
+		images, labels = images.numpy(), labels.numpy()
 		attack = foolbox.v1.attacks.ProjectedGradientDescentAttack(fmodel, distance=foolbox.distances.Linfinity)
 		adversarials = attack(images, labels, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
-		distances += np.asarray([a.distance.value for a in adversarials])
+		distances += [a.distance.value for a in adversarials]
 		adversarial_classes = [a.adversarial_class for a in adversarials]
 		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
 		np.save('pgd_advs/cifar100_pgd_advs_{}.npy'.format(idx), adv_imgs)
+		np.save('pgd_advs/cifar100_pgd_dist_{}.npy'.format(idx), distances)
+	print('adversarial acc:', adv_correct / len(loader.dataset))
+
 
 def ead(fmodel, loader):
 	adv_imgs, labels, distances, adv_classes = [], [], [], []
-	# loader = get_data()
+	adv_correct = 0
 	for idx, (images, labels) in enumerate(loader):
-		images, label = images.numpy(), label.numpy()
+		images, labels = images.numpy(), labels.numpy()
 		attack = foolbox.v1.attacks.EADAttack(fmodel, distance=foolbox.distances.MeanAbsoluteDistance)
 		adversarials = attack(images, labels, unpack=False)
 		adv_imgs += [a.perturbed for a in adversarials]
-		distances += np.asarray([a.distance.value for a in adversarials])
+		distances += [a.distance.value for a in adversarials]
 		adversarial_classes = [a.adversarial_class for a in adversarials]
 		adv_correct += np.mean(adversarial_classes == label)  # will always be 0.0
 		np.save('ead_advs/cifar100_ead_advs_{}.npy'.format(idx), adv_imgs)
+		np.save('ead_advs/cifar100_ead_dist_{}.npy'.format(idx), distances)
+	print('adversarial acc:', adv_correct / len(loader.dataset))
 
 
 
