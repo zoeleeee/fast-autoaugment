@@ -122,7 +122,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
     model = get_model(C.get()['model'], num_class(C.get()['dataset'], nb_labels), data_parallel=(not horovod))
     # print(model)
     # return
-    if C.get()['model'] == 'flower':
+    if C.get()['model']['type'] == 'flower':
         criterion = nn.BCELoss()
     else:
         criterion = nn.CrossEntropyLoss()
@@ -180,7 +180,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
             logger.info('checkpoint epoch@%d' % data['epoch'])
             if not isinstance(model, DataParallel):
                 # only for Pyramid cifar100
-                if C.get()['model'] == 'flower':
+                if C.get()['model']['type'] == 'flower':
                     weights = {k.replace('module.', 'model.'): v for k, v in data[key].items()}
                     weights['model.fc.weight'] = torch.rand_like(model.state_dict()['model.fc.weight'])
                     weights['model.fc.weight'] = torch.rand_like(model.state_dict()['model.fc.weight'])
@@ -191,7 +191,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
                     weights['fc.weight'] = torch.rand_like(model.state_dict()['fc.weight'])
                     weights['fc.weight'] = torch.rand_like(model.state_dict()['fc.weight'])
             else:
-                if C.get()['model'] == 'flower':
+                if C.get()['model']['type'] == 'flower':
                     weights = {k if 'module.model.' in k else k.replace('module.', 'module.model.'): v for k, v in data[key].items()}
                     weights['module.model.fc.weight'] = torch.rand_like(model.state_dict()['module.model.fc.weight'])
                     weights['module.model.fc.bias'] = torch.rand_like(model.state_dict()['module.model.fc.bias'])
@@ -234,7 +234,7 @@ def train_and_eval(tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metr
         return result
 
     # train loop
-    path = C.get()['model']
+    path = C.get()['model']['type']
     if not os.path.exists(path):
         os.makedirs(path)
     best_top1 = 0
