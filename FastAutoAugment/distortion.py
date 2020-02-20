@@ -33,20 +33,24 @@ def target_dist(normal, advs):
 	labels = np.argmax(advs, axis=-1)
 	return np.absolute([advs[i][labels[i]]-normal[i][labels[i]] for i in np.arange(len(labels))])
 
-def main(dist, advs_path='cifar100_advs_500.npy'):
+def main(dist):
 	labels = np.load('cifar100_labels_10000.npy')
 	normal_softmax = np.load('softmax_normal_cifar100.npy')
 	valids = np.hstack(np.argmax(normal_softmax, axis=-1)) == labels
 	samples = np.load('cifar100_advs_10000.npy')[valids]
 	normal_softmax = normal_softmax[valids]
-	advs = np.load(advs_path)[valids]
 	if dist == 'l1':
 		distortion = l_1(samples, advs)
+		advs_softmax = np.load('softmax_ead_advs_cifar100.npy')[valids]
+		advs = np.load('cifar100_advs_ead_500.npy')[valids]
 	elif dist == 'l2':
 		distortion = l_2(samples, advs)
 		advs_softmax = np.load('softmax_cws_advs_cifar100.npy')[valids]
+		advs = np.load('cifar100_advs_cws_500.npy')[valids]
 	elif dist == 'linf':
 		distortion = l_inf(samples, advs)
+		advs_softmax = np.load('softmax_pgd_advs_cifar100.npy')[valids]
+		advs = np.load('cifar100_advs_pgd_500.npy')[valids]
 
 	dist1 = hamming_dist(normal_softmax, advs_softmax)
 	dist2 = label_dist(normal_softmax, advs_softmax)
