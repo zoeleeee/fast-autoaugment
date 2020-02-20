@@ -53,13 +53,13 @@ def main(dist, advs_path='cifar100_advs_500.npy'):
 	dist3 = target_dist(normal_softmax, advs_softmax)
 
 	plt.subplot(3, 1, 1)
-	plt.scatter(distortion, dist1, color='plum')
+	plt.scatter(dist1, distortion, color='plum')
 	plt.title('hamming distance')
 	plt.subplot(3, 1, 2)
-	plt.scatter(distortion, dist2, color='gold')
+	plt.scatter(dist2, distortion, color='gold')
 	plt.title('label distance')
 	plt.subplot(3, 1, 3)
-	plt.scatter(distortion, dist3, color='cornflowerblue')
+	plt.scatter(dist3, distortion, color='cornflowerblue')
 	plt.title('target distance')
 	plt.savefig('distortion.png')	
 
