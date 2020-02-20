@@ -119,7 +119,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 	reps = np.load('2_label_permutation_cifar100.npy')[:500].T
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-	loader = data.DataLoader(dataset, batch_size=32, shuffle=False, num_workers=2, pin_memory=True, drop_last=False)
+	loader = data.DataLoader(dataset, batch_size=16, shuffle=False, num_workers=2, pin_memory=True, drop_last=False)
 	preds = []
 	valid = []
 	model = target_model(path, nb_labels=nb_labels, device=device)
