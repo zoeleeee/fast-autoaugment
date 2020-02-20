@@ -70,7 +70,7 @@ def predict_hamming(nb_res, t):
 		
 		# orders = np.random.permutation(samples.shape[1])
 		# _rep = np.array([rep[j] for j in len(rep)]).T
-		scores = np.load('_score_30_{}.npy'.format(nb_res))[idxs].T #[10000, 30]
+		scores = np.load('_score_30_{}.npy'.format(nb_res))[idxs] #[10000, 30]
 		print(scores.shape)
 		preds = []
 		preds_dist = []
