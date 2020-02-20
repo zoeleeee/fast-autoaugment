@@ -27,7 +27,7 @@ def hamming_dist(v1, v2):
 
 def label_dist(normal, advs):
 	labels = np.argmax(normal, axis=-1)
-	return np.absolute([v1[i][labels[i]]-v2[i][labels[i]] for i in np.arange(len(labels))])
+	return np.absolute([normal[i][labels[i]]-advs[i][labels[i]] for i in np.arange(len(labels))])
 
 def target_dist(normal, advs):
 	labels = np.argmax(advs, axis=-1)
