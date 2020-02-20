@@ -50,7 +50,10 @@ def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, write
     for data, label in loader:
         steps += 1
         # print(torch.max(data).item(), torch.min(data).item())
-        data, label = data.cuda(), torch.FloatTensor(label).cuda()
+        if C.get()['model']['type'] == 'flower':
+            data, label = data.cuda(), label.float().cuda()
+        else:
+            data, label = data.cuda(), label.cuda()
 
         if optimizer:
             optimizer.zero_grad()
@@ -66,7 +69,17 @@ def run_epoch(model, loader, loss_fn, optimizer, desc_default='', epoch=0, write
                 nn.utils.clip_grad_norm_(model.parameters(), C.get()['optimizer'].get('clip', 5))
             optimizer.step()
 
-        top1, top5 = accuracy(preds, label, (1, min(5, nb_labels)))
+        if C.get()['model']['type'] == 'flower':
+            top1 = 0 
+            top5 = 0
+            for i in range(preds.shape[1]):
+                t1, t5 = accuracy(preds[:,[i]], label[:,i], (1, 1))
+                top1+=t1
+                top5+=t5 
+            top1 /= (preds.shape[1])
+            top5 /= (preds.shape[1])
+        else:
+            top1, top5 = accuracy(preds, label, (1, min(5, nb_labels)))
         metrics.add_dict({
             'loss': loss.item() * len(data),
             'top1': top1.item() * len(data),
