@@ -8,18 +8,18 @@ from sklearn.metrics import pairwise
 from matplotlib import pyplot as plt
 
 def l_1(v1, v2):
-	v1 = np.reshape(v1.shape[0], -1)
-	v2 = np.reshape(v2.shape[0], -1)
+	v1 = v1.reshape(v1.shape[0], -1)
+	v2 = v2.reshape(v2.shape[0], -1)
 	return pairwise.paired_manhattan_distances(v1, v2)
 
 def l_2(v1, v2):
-	v1 = np.reshape(v1.shape[0], -1)
-	v2 = np.reshape(v2.shape[0], -1)
+	v1 = v1.reshape(v1.shape[0], -1)
+	v2 = v2.reshape(v2.shape[0], -1)
 	return pairwise.paired_euclidean_distances(v1, v2)
 
 def l_inf(v1, v2):
-	v1 = np.reshape(v1.shape[0], -1)
-	v2 = np.reshape(v2.shape[0], -1)
+	v1 = v1.reshape(v1.shape[0], -1)
+	v2 = v2.reshape(v2.shape[0], -1)
 	return np.max(np.absolute(v1-v2), axis=-1)
 
 def hamming_dist(v1, v2):
