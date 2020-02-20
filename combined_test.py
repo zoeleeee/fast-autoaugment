@@ -116,7 +116,7 @@ def check_combined(imgs, label_path, nb_labels, idx):
 def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500epochs.pth', nb_labels=30):
 	print(torch.cuda.is_available())
 	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-	reps = np.load('2_label_permutation_cifar100.npy')[:100].T
+	reps = np.load('2_label_permutation_cifar100.npy')[:500].T
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
 	loader = data.DataLoader(dataset, batch_size=32, shuffle=False, num_workers=2, pin_memory=True, drop_last=False)
