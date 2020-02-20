@@ -119,7 +119,7 @@ def check_classifier(imgs, label_path, path='cifar100_pyramid272_30outputs_500ep
 	reps = np.load('2_label_permutation_cifar100.npy')[:100].T
 	labels = np.load(label_path)
 	dataset = data.TensorDataset(torch.Tensor(imgs), torch.Tensor(labels))
-	loader = data.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=32, pin_memory=True, drop_last=False)
+	loader = data.DataLoader(dataset, batch_size=32, shuffle=False, num_workers=2, pin_memory=True, drop_last=False)
 	preds = []
 	valid = []
 	model = target_model(path, nb_labels=nb_labels, device=device)
@@ -159,7 +159,7 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth', nb
 	model.eval()
 	for images, label in loader:
 		outputs = model(images)
-		print(outputs.size())
+		# print(outputs.size())
 		pred = torch.nn.functional.softmax(outputs, dim=-1)
 		# _, predicted = torch.max(outputs, 1)
 		# _, predicted = torch.sigmoid(outputs, 1)
@@ -171,9 +171,9 @@ def check_origin(imgs, label_path, path='cifar100_pyramid272_top1_11.74.pth', nb
 			valid = (np.argmax(_predicted, axis=-1) == _label)
 			outs = outputs.detach().cpu().numpy()
 		else:
-			preds = np.hstack((preds, _predicted))
+			preds = np.vstack((preds, _predicted))
 			valid = np.hstack((valid, (np.argmax(_predicted, axis=-1) == _label)))
-			outs = np.hstack((outs, outputs.detach().cpu().numpy()))
+			outs = np.vstack((outs, outputs.detach().cpu().numpy()))
 	np.save('output_normal_cifar100.npy', outs)
 	np.save('softmax_normal_cifar100.npy', preds)
 	# np.save('{}_100classifier_500epochs.npy'.format(label_path[:-4]), valid)
