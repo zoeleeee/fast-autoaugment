@@ -38,7 +38,7 @@ def pgd(fmodel, loader):
 	attack = foolbox.attacks.ProjectedGradientDescentAttack(fmodel, distance=foolbox.distances.Linfinity)
 	for idx, (images, labels) in enumerate(loader):
 		print(idx)
-		if idx < 439:
+		if idx > 439:
 			continue
 		images, labels = images.numpy(), labels.numpy()
 		print(images.shape)
